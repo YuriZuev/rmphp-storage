@@ -1,0 +1,20 @@
+{
+	"name": "rmphp/storage",
+	"version": "1.0",
+	"license": "proprietary",
+	"authors": [
+		{
+			"name": "Yuri Zuev",
+			"email": "y_zuev@mail.ru"
+		}
+	],
+	"require": {
+		"php": ">= 7.4.0",
+		"ext-mysqli": "*"
+	},
+	"autoload": {
+		"psr-4": {
+			"Rmphp\\Storage\\": "src/"
+		}
+	}
+}
