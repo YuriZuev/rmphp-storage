@@ -63,7 +63,7 @@ interface StorageMysqlInterface {
 	 * @param int $count
 	 * @return MysqlDataObject
 	 */
-	public function read(string $sql, int $ln = 0, int $numPage = 1, int $count = 0) : MysqlDataObject;
+	public function read(string $sql, int $ln = 0, int $numPage = 1, int $count = 0) : bool|MysqlDataObject;
 
 	/**
 	 * @param $_cnt

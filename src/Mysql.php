@@ -136,9 +136,9 @@ class Mysql implements StorageMysqlInterface {
 	 * @param int $ln
 	 * @param int $numPage
 	 * @param int $count
-	 * @return MysqlDataObject
+	 * @return bool|MysqlDataObject
 	 */
-	public function read(string $sql, int $ln = 0, int $numPage = 1, int $count = 0) : MysqlDataObject {
+	public function read(string $sql, int $ln = 0, int $numPage = 1, int $count = 0) : bool|MysqlDataObject {
 
 		// для исключения лишней нагрузки при единичной выборки не смотрим кол-во результатов
 		if ($ln > 1) {
@@ -154,7 +154,7 @@ class Mysql implements StorageMysqlInterface {
 		}
 
 		$result = $this->query($sql.$limit);
-		if (!$result || $result->num_rows == 0) return new MysqlDataObject();
+		if (!$result || $result->num_rows == 0) return false;
 
 		$data = new MysqlDataObject($result);
 		$data->count = $cnts ?? 0;
