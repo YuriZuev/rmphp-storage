@@ -25,6 +25,13 @@ class MysqlDataObject {
 	}
 
 	/**
+	 * @return bool
+	 */
+	public function isResult() : bool {
+		return isset($this->result);
+	}
+
+	/**
 	 * @return iterable
 	 */
 	public function fatch(): iterable {
