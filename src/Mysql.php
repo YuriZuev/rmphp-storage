@@ -169,6 +169,7 @@ class Mysql implements StorageMysqlInterface {
 	 * @return string
 	 */
 	public function nav($_cnt, $_ln, $_numPage) : string {
+		//TODO: Обьект навигация или массив (без html)
 		$req_uri = "#";
 		// вычисляем десятки от номера страницы (от кокого генирируем)
  		// это необходимо для того, чтобы выводить 10 ссылок не с текущей
