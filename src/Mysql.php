@@ -142,8 +142,8 @@ class Mysql implements StorageMysqlInterface {
 
 		// для исключения лишней нагрузки при единичной выборки не смотрим кол-во результатов
 		if ($ln > 1) {
-			$cnts = $this->query($sql)->num_rows;
-			if($count > $ln) $nav = $this->nav($count, $ln, $numPage);
+			$cnts = (!empty($count)) ? $count : $this->query($sql)->num_rows;
+			if($cnts > $ln) $nav = $this->nav($count, $ln, $numPage);
 		}
 
 		// часть строки запроса с лимит

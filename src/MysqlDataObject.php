@@ -40,16 +40,18 @@ class MysqlDataObject {
 		return $this->generator();
 	}
 
-	public function fatchOne(int $index = 0) : iterable {
+
+	public function fatchOne(int $index = 0) : array {
 		if(!$this->result) return [];
 		$this->result->data_seek($index);
 		return $this->result->fetch_assoc();
 	}
 
 	/**
-	 * @return iterable
+	 * @return array
 	 */
-	public function getData() : iterable {
+	public function getData() : array {
+		if(!empty($this->arrayData)) return $this->arrayData;
 		if(!$this->result) return [];
 		$this->result->data_seek(0);
 		while ($row = $this->result->fetch_assoc()) {
