@@ -42,7 +42,7 @@ class Mysql implements StorageMysqlInterface {
 	 * @param string $sql
 	 * @return bool|\mysqli_result
 	 */
-	public function query(string $sql)
+	public function query(string $sql) : bool|\mysqli_result
 	{
 		$result = $this->mysqli->query($sql);
 		// запись в log
@@ -143,7 +143,6 @@ class Mysql implements StorageMysqlInterface {
 		// для исключения лишней нагрузки при единичной выборки не смотрим кол-во результатов
 		if ($ln > 1) {
 			$cnts = (!empty($count)) ? $count : $this->query($sql)->num_rows;
-			if($cnts > $ln) $nav = $this->nav($count, $ln, $numPage);
 		}
 
 		// часть строки запроса с лимит
@@ -158,81 +157,8 @@ class Mysql implements StorageMysqlInterface {
 
 		$data = new MysqlDataObject($result);
 		$data->count = $cnts ?? 0;
-		$data->nav = $nav ?? "";
+		$data->hex = md5($sql);
 		return $data;
-	}
-
-	/**
-	 * @param $_cnt
-	 * @param $_ln
-	 * @param $_numPage
-	 * @return string
-	 */
-	public function nav($_cnt, $_ln, $_numPage) : string {
-		//TODO: Обьект навигация или массив (без html)
-		$req_uri = "#";
-		// вычисляем десятки от номера страницы (от кокого генирируем)
- 		// это необходимо для того, чтобы выводить 10 ссылок не с текущей
-		// страницы, а с начала актуального десятка (с 1, 11, 21, и.т.д)
-		$dozen = (floor(($_numPage - 1) / 10) * 10);
-		// создаем ссылку на начало и на предыдущий десяток если она нужна
-		$str_nav = "<span>";
-		if ($dozen > 0) {
-			$str_nav.= "<a href=\"" . $req_uri . "\">1</a>";
-			$str_nav.= "<a href=\"" . $req_uri. ($dozen) . "\">...</a>";
-		}
-		// генерируем список цфровых ссылок
-		for ($i = 1; ($dozen + $i) * $_ln < $_cnt + $_ln && $i <= 10; $i++) {
-			// если сгенерированный номер страниц равен номеру переданной
-			if (($dozen + $i) == $_numPage) {
-				$str_nav.= "<font>".$_numPage."</font>";
-			}
-			// если сгенерированный номер страниц не равен номеру переданной
-			else {
-				$str_nav.= "<a href=\"" . $req_uri . ($dozen + $i) . "\">" . ($dozen + $i) . "</a>";
-			}
-		}
-		// создаем ссылку на следующий десяток
-		if (($dozen + ($i - 1)) * $_ln < $_cnt) {
-			$str_nav.= "<a href=\"" . $req_uri . ($dozen + $i) . "\">...</a>";
-		}
-		// создаем ссылку на конец если она нужна
-		if (($dozen + ($i - 1)) < (floor(($_cnt - 1) / $_ln) + 1)) {
-			$str_nav.= "<a href=\"" . $req_uri . (floor(($_cnt - 1) / $_ln) + 1) . "\">" . ceil($_cnt / $_ln) . "</a>";
-		}
-		$str_nav.= "</span>";
-		// Возвращем
-		return $str_nav;
-	}
-
-	/**
-	 * @param $_cnt
-	 * @param $_ln
-	 * @param $_numPage
-	 * @return string
-	 */
-	public function navb($_cnt, $_ln, $_numPage) : string
-	{
-		$req_uri = "#";
-		$str_nav = "<span>";
-		if($_numPage == 1){
-			$str_nav.= "<font>Первая страница</font>";
-		} else {
-			$str_nav.= "<a href=\"".$req_uri."1\">Начало</a>";
-		}
-		if($_numPage > 2){
-			$str_nav.= "<a href=\"".$req_uri.($_numPage-1)."\">Назад</a>";
-		}
-		if($_numPage != 1){
-			$str_nav.= "<font>Станица ".$_numPage."</font>";
-		}
-		if($_cnt > $_ln){
-			$str_nav.= "<a href=\"".$req_uri.($_numPage+1)."\">Далее</a>";
-		}
-
-		$str_nav.= "</span>";
-		// Возвращем
-		return $str_nav;
 	}
 
 	/**

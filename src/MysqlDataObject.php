@@ -12,9 +12,9 @@ namespace Rmphp\Storage;
 class MysqlDataObject {
 
 	private ?\mysqli_result $result;
-	public int $count;
-	public string $nav;
 	private array $arrayData = [];
+	public int $count;
+	public string $hex = "";
 
 	/**
 	 * MysqlDataObject constructor.

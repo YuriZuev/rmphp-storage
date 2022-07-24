@@ -20,7 +20,7 @@ interface StorageMysqlInterface {
 	 * @param string $sql
 	 * @return bool|\mysqli_result
 	 */
-	public function query(string $sql);
+	public function query(string $sql) : bool|\mysqli_result;
 
 	/**
 	 * Метод добавления записи в текущую БД
@@ -61,25 +61,9 @@ interface StorageMysqlInterface {
 	 * @param int $ln
 	 * @param int $numPage
 	 * @param int $count
-	 * @return MysqlDataObject
+	 * @return bool|MysqlDataObject
 	 */
 	public function read(string $sql, int $ln = 0, int $numPage = 1, int $count = 0) : bool|MysqlDataObject;
-
-	/**
-	 * @param $_cnt
-	 * @param $_ln
-	 * @param $_numPage
-	 * @return string
-	 */
-	public function nav($_cnt, $_ln, $_numPage) : string;
-
-	/**
-	 * @param $_cnt
-	 * @param $_ln
-	 * @param $_numPage
-	 * @return string
-	 */
-	public function navb($_cnt, $_ln, $_numPage) : string;
 
 	/**
 	 * @param string $tbl
@@ -106,6 +90,7 @@ interface StorageMysqlInterface {
 	 * @param string $log
 	 */
 	public function addLog(string $log) : void;
+
 	/**
 	 * @return array
 	 */
