@@ -8,7 +8,7 @@
 
 namespace Rmphp\Storage;
 
-interface StorageMysqlInterface {
+interface MysqlStorageInterface {
 
 	/**
 	 * @return \Mysqli
@@ -61,9 +61,9 @@ interface StorageMysqlInterface {
 	 * @param int $ln
 	 * @param int $numPage
 	 * @param int $count
-	 * @return bool|MysqlDataObject
+	 * @return bool|MysqlStorageData
 	 */
-	public function read(string $sql, int $ln = 0, int $numPage = 1, int $count = 0) : bool|MysqlDataObject;
+	public function read(string $sql, int $ln = 0, int $numPage = 1) : bool|MysqlStorageData;
 
 	/**
 	 * @param string $tbl

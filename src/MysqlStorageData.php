@@ -9,12 +9,11 @@
 namespace Rmphp\Storage;
 
 
-class MysqlDataObject {
+class MysqlStorageData {
 
 	private ?\mysqli_result $result;
 	private array $arrayData = [];
 	public int $count;
-	public string $hex = "";
 
 	/**
 	 * MysqlDataObject constructor.
@@ -29,6 +28,13 @@ class MysqlDataObject {
 	 */
 	public function isResult() : bool {
 		return isset($this->result);
+	}
+
+	/**
+	 * @return \mysqli_result|null
+	 */
+	public function getMysqlResult() : ?\mysqli_result {
+		return $this->result;
 	}
 
 	/**
