@@ -83,7 +83,7 @@ interface MysqlStorageInterface {
 	 * @param string $var
 	 * @return string
 	 */
-	public function ekrval(string $var) : string;
+	public function ekrval(?string $var) : ?string;
 
 	/**
 	 * Метод наполнения статичного массива с логами

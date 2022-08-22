@@ -8,50 +8,59 @@
 
 namespace Rmphp\Storage;
 
+use Exception;
+use Mysqli;
+use mysqli_result;
+use mysqli_sql_exception;
+
 class MysqlStorage implements MysqlStorageInterface {
 
 	public array $log = array();
 	public bool $logsEnabled = false;
-	private \Mysqli $mysqli;
+	private Mysqli $mysqli;
 
 	/**
 	 * Внутренний конструктор подключения к БД
 	 * Mysql constructor.
 	 * @param array $params
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	public function __construct(array $params) {
-		$this->mysqli = new \mysqli($params['host'], $params['user'], $params['pass'], $params['base']);
+		$this->mysqli = new mysqli($params['host'], $params['user'], $params['pass'], $params['base']);
 		// выводим ошибку при неудачном подключении
 		if ($this->mysqli->connect_errno) {
-			throw new \Exception($this->mysqli->connect_errno);
+			throw new Exception($this->mysqli->connect_errno);
 		}
 		$this->mysqli->set_charset("utf8");
 		if(!empty($params['logsEnable'])) $this->logsEnabled = true;
 	}
 
 	/**
-	 * @return \Mysqli
+	 * @return Mysqli
 	 */
-	public function mysql() : \Mysqli {
+	public function mysql() : Mysqli {
 		return $this->mysqli;
 	}
 
 	/**
-	 * Метод прямого запроса к текущей БД
 	 * @param string $sql
-	 * @return bool|\mysqli_result
+	 * @return bool|mysqli_result
 	 */
-	public function query(string $sql) : bool|\mysqli_result
+	public function query(string $sql) : bool|mysqli_result
 	{
-		$result = $this->mysqli->query($sql);
-		// запись в log
-		if ($this->mysqli->errno) {
-			$this->addLog("Err - SQL: ".$sql." | error:".$this->mysqli->error);
-		} else {
-			$this->addLog("OK - ".$sql);
+		try{
+			$result = $this->mysqli->query($sql);
+			// запись в log
+			($this->mysqli->errno)
+				? $this->addLog("Err - SQL: ".$sql." | error: ".$this->mysqli->error)
+				: $this->addLog("OK - ".$sql);
+			return $result;
 		}
-		return $result;
+		/* 8.1.0 Теперь по умолчанию установлено значение MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT. Ранее оно было MYSQLI_REPORT_OFF. */
+		catch (Exception $exception){
+			$this->addLog("Err - SQL: ".$sql." | error: ".$this->mysqli->error);
+			return false;
+		}
 	}
 
 	/**
@@ -135,7 +144,6 @@ class MysqlStorage implements MysqlStorageInterface {
 	 * @param string $sql
 	 * @param int $ln
 	 * @param int $numPage
-	 * @param int $count
 	 * @return bool|MysqlStorageData
 	 */
 	public function read(string $sql, int $ln = 0, int $numPage = 1) : bool|MysqlStorageData {
@@ -189,7 +197,8 @@ class MysqlStorage implements MysqlStorageInterface {
 	 * @param string $var
 	 * @return string
 	 */
-	public function ekrval(string $var) : string {
+	public function ekrval(?string $var) : ?string {
+		if(!isset($var)) return null;
 		$var = $this->mysqli->real_escape_string($var);
 		$var = trim($var);
 		return $var;
