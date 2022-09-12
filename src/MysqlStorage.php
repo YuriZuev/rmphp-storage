@@ -35,17 +35,12 @@ class MysqlStorage implements MysqlStorageInterface {
 		if(!empty($params['logsEnable'])) $this->logsEnabled = true;
 	}
 
-	/**
-	 * @return Mysqli
-	 */
+	/** @inheritDoc */
 	public function mysql() : Mysqli {
 		return $this->mysqli;
 	}
 
-	/**
-	 * @param string $sql
-	 * @return bool|mysqli_result
-	 */
+	/** @inheritDoc */
 	public function query(string $sql) : bool|mysqli_result
 	{
 		try{
@@ -56,20 +51,14 @@ class MysqlStorage implements MysqlStorageInterface {
 				: $this->addLog("OK - ".$sql);
 			return $result;
 		}
-		/* 8.1.0 Теперь по умолчанию установлено значение MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT. Ранее оно было MYSQLI_REPORT_OFF. */
+		/* 8.1.0 Теперь по умолчанию установлено значение MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT и выбрасывается исключение. Ранее оно было MYSQLI_REPORT_OFF. */
 		catch (Exception $exception){
 			$this->addLog("Err - SQL: ".$sql." | error: ".$this->mysqli->error);
 			return false;
 		}
 	}
 
-	/**
-	 * Метод добавления записи в текущую БД
-	 * @param string $tbl
-	 * @param array $arr
-	 * @param bool $update
-	 * @return bool
-	 */
+	/** @inheritDoc */
 	public function add(string $tbl, array $arr, bool $update = false) : bool {
 		foreach ($arr as $key => $value) {
 			$col[] = "`$key`";
@@ -88,14 +77,7 @@ class MysqlStorage implements MysqlStorageInterface {
 		return $this->query($sql);
 	}
 
-	/**
-	 * Метод редактирования записи в текущей БД по ID
-	 * @param string $tbl
-	 * @param array $arr
-	 * @param string $case
-	 * @param bool $ignore
-	 * @return bool
-	 */
+	/** @inheritDoc */
 	public function edit(string $tbl, array $arr, string $case, bool $ignore=false) : bool {
 		foreach ($arr as $key => $value) {
 			$isql[] = ($value !== NULL) ? "`$key`='$value'" : "`$key`=NULL";
@@ -109,12 +91,7 @@ class MysqlStorage implements MysqlStorageInterface {
 		return $this->query($sql);
 	}
 
-	/**
-	 * Метод добавления записи в текущую БД
-	 * @param string $tbl
-	 * @param array $arr
-	 * @return bool
-	 */
+	/** @inheritDoc */
 	public function replace(string $tbl, array $arr) : bool {
 		foreach ($arr as $key => $value) {
 			$col[] = "`$key`";
@@ -128,11 +105,7 @@ class MysqlStorage implements MysqlStorageInterface {
 		return $this->query($sql);
 	}
 
-	/**
-	 * @param string $tbl
-	 * @param string $case
-	 * @return bool
-	 */
+	/** @inheritDoc */
 	public function del(string $tbl, string $case) : bool {
 		$where = (preg_match("'^[0-9]+$'",$case)) ? "id = '".(int) $case."'" : $case;
 		$sql = "delete low_priority from ".$this->ekrval($tbl)." where ".$where;
@@ -140,18 +113,11 @@ class MysqlStorage implements MysqlStorageInterface {
 		return $this->query($sql);
 	}
 
-	/**
-	 * @param string $sql
-	 * @param int $ln
-	 * @param int $numPage
-	 * @return bool|MysqlStorageData
-	 */
+	/** @inheritDoc */
 	public function read(string $sql, int $ln = 0, int $numPage = 1) : bool|MysqlStorageData {
-
 		if ($ln > 1) {
 			$cnts = $this->query($sql)->num_rows;
 		}
-
 		// часть строки запроса с лимит
 		switch (true){
 			case ($ln > 1 || $numPage > 1) : $limit = " limit ".(($numPage * $ln) - $ln).", ".$ln; break;
@@ -167,10 +133,7 @@ class MysqlStorage implements MysqlStorageInterface {
 		return $data;
 	}
 
-	/**
-	 * @param string $tbl
-	 * @return bool
-	 */
+	/** @inheritDoc */
 	public function chktbl(string $tbl) : bool {
 		$result = $this->mysqli->query("SHOW TABLES LIKE '".$this->ekrval($tbl)."'");
 		if ($result->num_rows == 0) {
@@ -180,48 +143,29 @@ class MysqlStorage implements MysqlStorageInterface {
 		return true;
 	}
 
-	/**
-	 * Метод экранирования данных с учетом текущего подключения в т.ч для LIKE
-	 * @param string $var
-	 * @return string
-	 */
-	public function ekrreg(string $var) : string {
-		$var = $this->mysqli->real_escape_string($var);
-		$var = addcslashes($var, "%_");
-		$var = trim($var);
-		return $var;
+	/** @inheritDoc */
+	public function ekrreg(string $var) : ?string {
+		if(!isset($var)) return null;
+		return trim(addcslashes($this->mysqli->real_escape_string($var), "%_"));
 	}
 
-	/**
-	 * Метод экранирования данных с учетом текущего подключения
-	 * @param string $var
-	 * @return string
-	 */
+	/** @inheritDoc */
 	public function ekrval(?string $var) : ?string {
 		if(!isset($var)) return null;
-		$var = $this->mysqli->real_escape_string($var);
-		$var = trim($var);
-		return $var;
+		return trim($this->mysqli->real_escape_string($var));
 	}
 
-	/**
-	 * Метод наполнения статичного массива с логами
-	 * @param string $log
-	 */
+	/** @inheritDoc */
 	public function addLog(string $log) : void {
 		if($this->logsEnabled) $this->log[] = $log;
 	}
 
-	/**
-	 * @return array
-	 */
+	/** @inheritDoc */
 	public function getLogs() : array {
 		return $this->log;
 	}
 
-	/**
-	 * @return array
-	 */
+	/** @inheritDoc */
 	public function getLastLog() : string {
 		return $this->log[count($this->log)-1];
 	}

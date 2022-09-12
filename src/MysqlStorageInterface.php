@@ -74,14 +74,14 @@ interface MysqlStorageInterface {
 	/**
 	 * Метод экранирования данных с учетом текущего подключения в т.ч для LIKE
 	 * @param string $var
-	 * @return string
+	 * @return string|null
 	 */
-	public function ekrreg(string $var) : string;
+	public function ekrreg(string $var) : ?string;
 
 	/**
 	 * Метод экранирования данных с учетом текущего подключения
-	 * @param string $var
-	 * @return string
+	 * @param string|null $var
+	 * @return string|null
 	 */
 	public function ekrval(?string $var) : ?string;
 
