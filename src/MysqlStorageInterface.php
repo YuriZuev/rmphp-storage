@@ -76,14 +76,14 @@ interface MysqlStorageInterface {
 	 * @param string $var
 	 * @return string|null
 	 */
-	public function ekrreg(string $var) : ?string;
+	public function escapeReg(string $var) : ?string;
 
 	/**
 	 * Метод экранирования данных с учетом текущего подключения
 	 * @param string|null $var
 	 * @return string|null
 	 */
-	public function ekrval(?string $var) : ?string;
+	public function escapeStr(?string $var) : ?string;
 
 	/**
 	 * Метод наполнения статичного массива с логами

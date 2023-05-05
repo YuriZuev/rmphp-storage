@@ -70,9 +70,9 @@ class MysqlStorage implements MysqlStorageInterface {
 		$val = implode(", ", $val);
 
 		if (!$update) {
-			$sql = "insert low_priority into ".$this->ekrval($tbl)." (".$col.") values (" . $val . ")";
+			$sql = "insert low_priority into ".$this->escapeStr($tbl)." (".$col.") values (" . $val . ")";
 		} else{
-			$sql = "insert low_priority into ".$this->ekrval($tbl)." (".$col.") values (".$val.") on duplicate key update ".implode(", ", $upd);
+			$sql = "insert low_priority into ".$this->escapeStr($tbl)." (".$col.") values (".$val.") on duplicate key update ".implode(", ", $upd);
 		}
 		return $this->query($sql);
 	}
@@ -84,9 +84,9 @@ class MysqlStorage implements MysqlStorageInterface {
 		}
 		$where = (preg_match("'^[0-9]+$'",$case)) ? "id = '".(int) $case."'" : $case;
 		if(empty($ignore)) {
-			$sql = "update low_priority " . $this->ekrval($tbl) . " set " . implode(", ", $isql) . " where " . $where;
+			$sql = "update low_priority " . $this->escapeStr($tbl) . " set " . implode(", ", $isql) . " where " . $where;
 		} else {
-			$sql = "update low_priority ignore " . $this->ekrval($tbl) . " set " . implode(", ", $isql) . " where " . $where;
+			$sql = "update low_priority ignore " . $this->escapeStr($tbl) . " set " . implode(", ", $isql) . " where " . $where;
 		}
 		return $this->query($sql);
 	}
@@ -101,14 +101,14 @@ class MysqlStorage implements MysqlStorageInterface {
 		$col = implode(", ", $col);
 		$val = implode(", ", $val);
 
-		$sql  = "replace low_priority into ".$this->ekrval($tbl)." (".$col.") values (".$val.")";
+		$sql  = "replace low_priority into ".$this->escapeStr($tbl)." (".$col.") values (".$val.")";
 		return $this->query($sql);
 	}
 
 	/** @inheritDoc */
 	public function del(string $tbl, string $case) : bool {
 		$where = (preg_match("'^[0-9]+$'",$case)) ? "id = '".(int) $case."'" : $case;
-		$sql = "delete low_priority from ".$this->ekrval($tbl)." where ".$where;
+		$sql = "delete low_priority from ".$this->escapeStr($tbl)." where ".$where;
 		// возвращаем число затронутых строк/false
 		return $this->query($sql);
 	}
@@ -135,7 +135,7 @@ class MysqlStorage implements MysqlStorageInterface {
 
 	/** @inheritDoc */
 	public function chktbl(string $tbl) : bool {
-		$result = $this->mysqli->query("SHOW TABLES LIKE '".$this->ekrval($tbl)."'");
+		$result = $this->mysqli->query("SHOW TABLES LIKE '".$this->escapeStr($tbl)."'");
 		if ($result->num_rows == 0) {
 			$this->addLog(__METHOD__.":"." Err - Table ".$tbl." doesn't exist"); return false;
 		}
@@ -144,13 +144,13 @@ class MysqlStorage implements MysqlStorageInterface {
 	}
 
 	/** @inheritDoc */
-	public function ekrreg(string $var) : ?string {
+	public function escapeReg(string $var) : ?string {
 		if(!isset($var)) return null;
 		return trim(addcslashes($this->mysqli->real_escape_string($var), "%_"));
 	}
 
 	/** @inheritDoc */
-	public function ekrval(?string $var) : ?string {
+	public function escapeStr(?string $var) : ?string {
 		if(!isset($var)) return null;
 		return trim($this->mysqli->real_escape_string($var));
 	}
