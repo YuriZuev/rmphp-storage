@@ -50,7 +50,7 @@ class MysqlStorageData {
 	/**
 	 * @return array
 	 */
-	public function getData() : array {
+	public function getData() : iterable {
 		if(!empty($this->arrayData)) return $this->arrayData;
 		if(!$this->result) return [];
 		$this->result->data_seek(0);
