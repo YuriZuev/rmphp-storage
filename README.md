@@ -17,5 +17,5 @@ composer require rmphp/kernel:"^1.0"
 Dev version contains the latest changes
 
 ```bash
-composer require rmphp/kernel:"1.0.x-dev"
+composer require rmphp/kernel:"1.x-dev"
 ```
