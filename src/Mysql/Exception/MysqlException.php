@@ -1,6 +1,6 @@
 <?php
 
-namespace Rmphp\Storage\Exception;
+namespace Rmphp\Storage\Mysql\Exception;
 
 
 class MysqlException extends \Exception {

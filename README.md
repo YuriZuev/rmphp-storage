@@ -7,15 +7,15 @@ DB component for **Rmphp**
 Stable version
 
 ```bash
-composer require rmphp/kernel
+composer require rmphp/storage
 ```
 ```bash
-composer require rmphp/kernel:"^1.0"
+composer require rmphp/storage:"^2.0"
 ```
 
 
 Dev version contains the latest changes
 
 ```bash
-composer require rmphp/kernel:"1.x-dev"
+composer require rmphp/storage:"2.x-dev"
 ```

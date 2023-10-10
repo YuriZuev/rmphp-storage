@@ -1,6 +1,6 @@
 <?php
 
-namespace Rmphp\Storage;
+namespace Rmphp\Storage\Mysql;
 
 
 class MysqlStorageData {
