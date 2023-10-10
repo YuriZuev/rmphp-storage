@@ -8,6 +8,7 @@ class MysqlStorageData {
 	private ?\mysqli_result $result;
 	private array $arrayData = [];
 	public int $count;
+	public string $hex = "";
 
 	/**
 	 * MysqlDataObject constructor.

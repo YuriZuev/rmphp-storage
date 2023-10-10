@@ -57,7 +57,7 @@ interface MysqlStorageInterface {
 	 * @param int $count
 	 * @return bool|MysqlStorageData
 	 */
-	public function read(string $sql, int $ln = 0, int $numPage = 1) : bool|MysqlStorageData;
+	public function read(string $sql, int $ln = 0, int $numPage = 1, int $count=0) : bool|MysqlStorageData;
 
 	/**
 	 * @param string $tbl

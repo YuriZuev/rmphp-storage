@@ -107,10 +107,12 @@ class MysqlStorage implements MysqlStorageInterface {
 	}
 
 	/** @inheritDoc */
-	public function read(string $sql, int $ln = 0, int $numPage = 1) : bool|MysqlStorageData {
+	public function read(string $sql, int $ln=0, int $numPage=1, int $count=0): bool|MysqlStorageData {
+
 		if ($ln > 1) {
-			$cnts = $this->query($sql)->num_rows;
+			$cnts = (!empty($count)) ? $count : $this->query($sql)->num_rows;
 		}
+
 		// часть строки запроса с лимит
 		switch (true){
 			case ($ln > 1 || $numPage > 1) : $limit = " limit ".(($numPage * $ln) - $ln).", ".$ln; break;
@@ -123,8 +125,11 @@ class MysqlStorage implements MysqlStorageInterface {
 
 		$data = new MysqlStorageData($result);
 		$data->count = $cnts ?? 0;
+		$data->hex = md5($sql);
 		return $data;
 	}
+
+
 
 	/** @inheritDoc */
 	public function chktbl(string $tbl) : bool {
