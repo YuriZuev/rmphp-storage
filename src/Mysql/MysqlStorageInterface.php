@@ -86,7 +86,7 @@ interface MysqlStorageInterface {
 	 * @param string $sql
 	 * @return array
 	 */
-	public function findOne(string $sql) : array;
+	public function findOne(string $sql) : bool|array;
 
 	/**
 	 * Метод экранирования данных с учетом текущего подключения в т.ч для LIKE

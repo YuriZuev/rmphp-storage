@@ -135,8 +135,9 @@ class MysqlStorage implements MysqlStorageInterface {
 	}
 
 	/** @inheritDoc */
-	public function findOne(string $sql) : array {
+	public function findOne(string $sql) : bool|array {
 		$result = $this->query($sql);
+		if (!$result || $result->num_rows == 0) return false;
 		$data = new MysqlStorageData($result);
 		return $data->fetchOne();
 	}
