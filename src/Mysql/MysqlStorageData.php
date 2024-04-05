@@ -35,14 +35,14 @@ class MysqlStorageData {
 	/**
 	 * @return iterable
 	 */
-	public function fatch(): iterable {
+	public function fetch(): iterable {
 		if(!empty($this->arrayData)) return $this->arrayData;
 		if(!$this->result) return [];
 		return $this->generator();
 	}
 
 
-	public function fatchOne(int $index = 0) : array {
+	public function fetchOne(int $index = 0) : array {
 		if(!$this->result) return [];
 		$this->result->data_seek($index);
 		return $this->result->fetch_assoc();

@@ -38,82 +38,87 @@ class MysqlStorage implements MysqlStorageInterface {
 	{
 		try{
 			$result = $this->mysqli->query($sql);
-			// запись в log
-			($this->mysqli->errno)
-				? $this->addLog("Err - SQL: ".$sql." | error: ".$this->mysqli->error)
-				: $this->addLog("OK - ".$sql);
+			if($this->mysqli->errno) throw new Exception();
+			$this->addLog("OK - ".$sql);
 			return $result;
 		}
-		/* 8.1.0 Теперь по умолчанию установлено значение MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT и выбрасывается исключение. Ранее оно было MYSQLI_REPORT_OFF. */
 		catch (Exception $exception){
 			$this->addLog("Err - SQL: ".$sql." | error: ".$this->mysqli->error);
 			return false;
 		}
 	}
 
-	/** @inheritDoc */
-	public function add(string $tbl, array $arr, bool $update = false) : bool {
-		foreach ($arr as $key => $value) {
-			$col[] = "`$key`";
-			$val[] = ($value !== NULL) ? "'$value'" : "NULL";
-			$upd[] = ($value !== NULL) ? "`$key`='$value'" : "`$key`=NULL";
-		}
-		// Собираем в строки для использования в запросе
-		$col = implode(", ", $col);
-		$val = implode(", ", $val);
 
+	/** @inheritDoc */
+	public function insert(string $tbl, array $data, bool $update = false) : bool {
+		$chunks = $this->getInsertValue($data);
+		$upd = $this->getUpdateValue($data);
 		if (!$update) {
-			$sql = "insert low_priority into ".$this->escapeStr($tbl)." (".$col.") values (" . $val . ")";
+			$sql = "insert low_priority into ".$this->escapeStr($tbl)." (".implode(",", $chunks['columns']).") values (".implode(",", $chunks['values']).")";
 		} else{
-			$sql = "insert low_priority into ".$this->escapeStr($tbl)." (".$col.") values (".$val.") on duplicate key update ".implode(", ", $upd);
+			$sql = "insert low_priority into ".$this->escapeStr($tbl)." (".implode(",", $chunks['columns']).") values (".implode(",", $chunks['values']).") on duplicate key update ".implode(",", $upd);
 		}
 		return $this->query($sql);
 	}
 
-	/** @inheritDoc */
-	public function edit(string $tbl, array $arr, string $case, bool $ignore=false) : bool {
-		foreach ($arr as $key => $value) {
-			$isql[] = ($value !== NULL) ? "`$key`='$value'" : "`$key`=NULL";
+	/**
+	 * @param string $tbl
+	 * @param array $data
+	 * @return bool
+	 */
+	public function batchInsert(string $tbl, array $data) : bool {
+		foreach($data as $insertRow){
+			$chunks = $this->getInsertValue($insertRow);
+			$val[] = "(".implode(",", $chunks['values']).")";
 		}
-		$where = (preg_match("'^[0-9]+$'",$case)) ? "id = '".(int) $case."'" : $case;
-		if(empty($ignore)) {
-			$sql = "update low_priority " . $this->escapeStr($tbl) . " set " . implode(", ", $isql) . " where " . $where;
-		} else {
-			$sql = "update low_priority ignore " . $this->escapeStr($tbl) . " set " . implode(", ", $isql) . " where " . $where;
-		}
+		$sql = "insert low_priority into ".$this->escapeStr($tbl)." (".implode(",", $chunks['columns'] ?? []).") values ".implode(",", $val ?? []);
 		return $this->query($sql);
 	}
 
 	/** @inheritDoc */
-	public function replace(string $tbl, array $arr) : bool {
-		foreach ($arr as $key => $value) {
-			$col[] = "`$key`";
-			$val[] = ($value !== NULL) ? "'$value'" : "NULL";
-		}
-		// Собираем в строки для использования в запросе
-		$col = implode(", ", $col);
-		$val = implode(", ", $val);
-
-		$sql  = "replace low_priority into ".$this->escapeStr($tbl)." (".$col.") values (".$val.")";
+	public function updateById(string $tbl, array $data, int $id, array $modifier = []) : bool {
+		$chunks = $this->getUpdateValue($data);
+		$sql = "update low_priority ".implode(" ", $modifier)." ".$this->escapeStr($tbl)." set ".implode(",", $chunks)." where id = '".$id."'";
 		return $this->query($sql);
 	}
 
 	/** @inheritDoc */
-	public function del(string $tbl, string $case) : bool {
-		$where = (preg_match("'^[0-9]+$'",$case)) ? "id = '".(int) $case."'" : $case;
-		$sql = "delete low_priority from ".$this->escapeStr($tbl)." where ".$where;
+	public function updateByParam(string $tbl, array $data, string $case,  array $modifier = []) : bool {
+		$chunks = $this->getUpdateValue($data);
+		$sql = "update low_priority ".implode(" ", $modifier)." ".$this->escapeStr($tbl)." set ". implode(",", $chunks)." where ".$case;
+		return $this->query($sql);
+	}
+
+	/** @inheritDoc */
+	public function replace(string $tbl, array $data) : bool {
+		$chunks = $this->getInsertValue($data);
+		$sql  = "replace low_priority into ".$this->escapeStr($tbl)." (".implode(",", $chunks['columns']).") values (".implode(",", $chunks['values']).")";
+		return $this->query($sql);
+	}
+
+
+	/** @inheritDoc */
+	public function deleteById(string $tbl, int $id) : bool {
+		$sql = "delete low_priority from ".$this->escapeStr($tbl)." where id='.$id.'";
 		// возвращаем число затронутых строк/false
 		return $this->query($sql);
 	}
 
 	/** @inheritDoc */
-	public function read(string $sql, int $ln=0, int $numPage=1, int $count=0): bool|MysqlStorageData {
+	public function deleteByParam(string $tbl, string $case) : bool {
+		$sql = "delete low_priority from ".$this->escapeStr($tbl)." where ".$case;
+		// возвращаем число затронутых строк/false
+		return $this->query($sql);
+	}
+
+
+	/** @inheritDoc */
+	public function find(string $sql, int $ln=0, int $numPage=1, int $count=0): bool|MysqlStorageData {
 
 		if ($ln > 1) {
 			$cnts = (!empty($count)) ? $count : $this->query($sql)->num_rows;
 		}
 
-		// часть строки запроса с лимит
 		switch (true){
 			case ($ln > 1 || $numPage > 1) : $limit = " limit ".(($numPage * $ln) - $ln).", ".$ln; break;
 			case ($ln == 1): $limit = " limit 0, 1"; break;
@@ -129,17 +134,13 @@ class MysqlStorage implements MysqlStorageInterface {
 		return $data;
 	}
 
-
-
 	/** @inheritDoc */
-	public function chktbl(string $tbl) : bool {
-		$result = $this->mysqli->query("SHOW TABLES LIKE '".$this->escapeStr($tbl)."'");
-		if ($result->num_rows == 0) {
-			$this->addLog(__METHOD__.":"." Err - Table ".$tbl." doesn't exist"); return false;
-		}
-		$this->addLog(__METHOD__.":"." OK - Table ".$tbl." exist");
-		return true;
+	public function findOne(string $sql) : array {
+		$result = $this->query($sql);
+		$data = new MysqlStorageData($result);
+		return $data->fetchOne();
 	}
+
 
 	/** @inheritDoc */
 	public function escapeReg(string $var) : ?string {
@@ -152,6 +153,7 @@ class MysqlStorage implements MysqlStorageInterface {
 		if(!isset($var)) return null;
 		return trim($this->mysqli->real_escape_string($var));
 	}
+
 
 	/** @inheritDoc */
 	public function addLog(string $log) : void {
@@ -166,6 +168,33 @@ class MysqlStorage implements MysqlStorageInterface {
 	/** @inheritDoc */
 	public function getLastLog() : string {
 		return $this->log[count($this->log)-1];
+	}
+
+
+	/**
+	 * @param array $array
+	 * @return array[]
+	 */
+	private function getInsertValue(array $array) : array {
+		foreach ($array as $key => $value) {
+			$col[] = "`$key`";
+			$val[] = ($value !== NULL) ? "'$value'" : "NULL";
+		}
+		return [
+			"columns" => $col ?? [],
+			"values" => $val ?? []
+		];
+	}
+
+	/**
+	 * @param array $array
+	 * @return array
+	 */
+	private function getUpdateValue(array $array) : array {
+		foreach ($array as $key => $value) {
+			$out[] = ($value !== NULL) ? "`$key`='$value'" : "`$key`=NULL";
+		}
+		return $out ?? [];
 	}
 
 }

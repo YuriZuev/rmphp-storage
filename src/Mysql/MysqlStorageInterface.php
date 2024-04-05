@@ -19,36 +19,59 @@ interface MysqlStorageInterface {
 	/**
 	 * Метод добавления записи в текущую БД
 	 * @param string $tbl
-	 * @param array $arr
+	 * @param array $data
+	 * @param array $modifier
 	 * @param bool $update
 	 * @return bool
 	 */
-	public function add(string $tbl, array $arr, bool $update = false) : bool;
+	public function insert(string $tbl, array $data, bool $update = false) : bool;
+
+	/**
+	 * @param string $tbl
+	 * @param array $data
+	 * @return bool
+	 */
+	public function batchInsert(string $tbl, array $data) : bool;
 
 	/**
 	 * Метод редактирования записи в текущей БД по ID
 	 * @param string $tbl
-	 * @param array $arr
-	 * @param string $case
-	 * @param bool $ignore
+	 * @param array $data
+	 * @param int $id
+	 * @param array $modifier
 	 * @return bool
 	 */
-	public function edit(string $tbl, array $arr, string $case, bool $ignore=false) : bool;
-
-	/**
-	 * Метод добавления записи в текущую БД
-	 * @param string $tbl
-	 * @param array $arr
-	 * @return bool
-	 */
-	public function replace(string $tbl, array $arr) : bool;
+	public function updateById(string $tbl, array $data, int $id, array $modifier = []) : bool;
 
 	/**
 	 * @param string $tbl
+	 * @param array $data
+	 * @param string $case
+	 * @param array $modifier
+	 * @return bool
+	 */
+	public function updateByParam(string $tbl, array $data, string $case, array $modifier = []) : bool;
+
+	/**
+	 * @param string $tbl
+	 * @param array $data
+	 * @return bool
+	 */
+	public function replace(string $tbl, array $data) : bool;
+
+	/**
+	 * @param string $tbl
+	 * @param int $id
+	 * @return bool
+	 */
+	public function deleteById(string $tbl, int $id) : bool;
+
+	/**
+	 * @param string $tbl
 	 * @param string $case
 	 * @return bool
 	 */
-	public function del(string $tbl, string $case) : bool;
+	public function deleteByParam(string $tbl, string $case) : bool;
 
 	/**
 	 * @param string $sql
@@ -57,13 +80,13 @@ interface MysqlStorageInterface {
 	 * @param int $count
 	 * @return bool|MysqlStorageData
 	 */
-	public function read(string $sql, int $ln = 0, int $numPage = 1, int $count=0) : bool|MysqlStorageData;
+	public function find(string $sql, int $ln = 0, int $numPage = 1, int $count=0) : bool|MysqlStorageData;
 
 	/**
-	 * @param string $tbl
-	 * @return bool
+	 * @param string $sql
+	 * @return array
 	 */
-	public function chktbl(string $tbl) : bool;
+	public function findOne(string $sql) : array;
 
 	/**
 	 * Метод экранирования данных с учетом текущего подключения в т.ч для LIKE
