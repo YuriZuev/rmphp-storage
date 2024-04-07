@@ -50,63 +50,59 @@ class MysqlStorage implements MysqlStorageInterface {
 
 
 	/** @inheritDoc */
-	public function insert(string $tbl, array $data, bool $update = false) : bool {
+	public function insert(string $table, array $data, bool $update = false) : bool {
 		$chunks = $this->getInsertValue($data);
 		$upd = $this->getUpdateValue($data);
 		if (!$update) {
-			$sql = "insert low_priority into ".$this->escapeStr($tbl)." (".implode(",", $chunks['columns']).") values (".implode(",", $chunks['values']).")";
+			$sql = "insert low_priority into ".$this->escapeStr($table)." (".implode(",", $chunks['columns']).") values (".implode(",", $chunks['values']).")";
 		} else{
-			$sql = "insert low_priority into ".$this->escapeStr($tbl)." (".implode(",", $chunks['columns']).") values (".implode(",", $chunks['values']).") on duplicate key update ".implode(",", $upd);
+			$sql = "insert low_priority into ".$this->escapeStr($table)." (".implode(",", $chunks['columns']).") values (".implode(",", $chunks['values']).") on duplicate key update ".implode(",", $upd);
 		}
 		return $this->query($sql);
 	}
 
-	/**
-	 * @param string $tbl
-	 * @param array $data
-	 * @return bool
-	 */
-	public function batchInsert(string $tbl, array $data) : bool {
+	/** @inheritDoc */
+	public function batchInsert(string $table, array $data) : bool {
 		foreach($data as $insertRow){
 			$chunks = $this->getInsertValue($insertRow);
-			$val[] = "(".implode(",", $chunks['values']).")";
+			$values[] = "(".implode(",", $chunks['values']).")";
 		}
-		$sql = "insert low_priority into ".$this->escapeStr($tbl)." (".implode(",", $chunks['columns'] ?? []).") values ".implode(",", $val ?? []);
+		$sql = "insert low_priority into ".$this->escapeStr($table)." (".implode(",", $chunks['columns'] ?? []).") values ".implode(",", $values ?? []);
 		return $this->query($sql);
 	}
 
 	/** @inheritDoc */
-	public function updateById(string $tbl, array $data, int $id, array $modifier = []) : bool {
+	public function updateById(string $table, array $data, int $id, array $modifier = []) : bool {
 		$chunks = $this->getUpdateValue($data);
-		$sql = "update low_priority ".implode(" ", $modifier)." ".$this->escapeStr($tbl)." set ".implode(",", $chunks)." where id = '".$id."'";
+		$sql = "update low_priority ".implode(" ", $modifier)." ".$this->escapeStr($table)." set ".implode(",", $chunks)." where id = '".$id."'";
 		return $this->query($sql);
 	}
 
 	/** @inheritDoc */
-	public function updateByParam(string $tbl, array $data, string $case,  array $modifier = []) : bool {
+	public function updateByParam(string $table, array $data, string $case,  array $modifier = []) : bool {
 		$chunks = $this->getUpdateValue($data);
-		$sql = "update low_priority ".implode(" ", $modifier)." ".$this->escapeStr($tbl)." set ". implode(",", $chunks)." where ".$case;
+		$sql = "update low_priority ".implode(" ", $modifier)." ".$this->escapeStr($table)." set ". implode(",", $chunks)." where ".$case;
 		return $this->query($sql);
 	}
 
 	/** @inheritDoc */
-	public function replace(string $tbl, array $data) : bool {
+	public function replace(string $table, array $data) : bool {
 		$chunks = $this->getInsertValue($data);
-		$sql  = "replace low_priority into ".$this->escapeStr($tbl)." (".implode(",", $chunks['columns']).") values (".implode(",", $chunks['values']).")";
+		$sql  = "replace low_priority into ".$this->escapeStr($table)." (".implode(",", $chunks['columns']).") values (".implode(",", $chunks['values']).")";
 		return $this->query($sql);
 	}
 
 
 	/** @inheritDoc */
-	public function deleteById(string $tbl, int $id) : bool {
-		$sql = "delete low_priority from ".$this->escapeStr($tbl)." where id='.$id.'";
+	public function deleteById(string $table, int $id) : bool {
+		$sql = "delete low_priority from ".$this->escapeStr($table)." where id='.$id.'";
 		// возвращаем число затронутых строк/false
 		return $this->query($sql);
 	}
 
 	/** @inheritDoc */
-	public function deleteByParam(string $tbl, string $case) : bool {
-		$sql = "delete low_priority from ".$this->escapeStr($tbl)." where ".$case;
+	public function deleteByParam(string $table, string $case) : bool {
+		$sql = "delete low_priority from ".$this->escapeStr($table)." where ".$case;
 		// возвращаем число затронутых строк/false
 		return $this->query($sql);
 	}
@@ -136,7 +132,15 @@ class MysqlStorage implements MysqlStorageInterface {
 
 	/** @inheritDoc */
 	public function findOne(string $sql) : bool|array {
-		$result = $this->query($sql);
+		$result = $this->query($sql." limit 0, 1");
+		if (!$result || $result->num_rows == 0) return false;
+		$data = new MysqlStorageData($result);
+		return $data->fetchOne();
+	}
+
+	/** @inheritDoc */
+	public function findById(string $table, int $id, string $name = 'id') : bool|array {
+		$result = $this->query("select * from ".$table." where `".$name."`=".$id." limit 0, 1");
 		if (!$result || $result->num_rows == 0) return false;
 		$data = new MysqlStorageData($result);
 		return $data->fetchOne();
@@ -144,15 +148,15 @@ class MysqlStorage implements MysqlStorageInterface {
 
 
 	/** @inheritDoc */
-	public function escapeReg(string $var) : ?string {
-		if(!isset($var)) return null;
-		return trim(addcslashes($this->mysqli->real_escape_string($var), "%_"));
+	public function escapeReg(string $string) : ?string {
+		if(!isset($string)) return null;
+		return trim(addcslashes($this->mysqli->real_escape_string($string), "%_"));
 	}
 
 	/** @inheritDoc */
-	public function escapeStr(?string $var) : ?string {
-		if(!isset($var)) return null;
-		return trim($this->mysqli->real_escape_string($var));
+	public function escapeStr(?string $string) : ?string {
+		if(!isset($string)) return null;
+		return trim($this->mysqli->real_escape_string($string));
 	}
 
 
@@ -178,12 +182,12 @@ class MysqlStorage implements MysqlStorageInterface {
 	 */
 	private function getInsertValue(array $array) : array {
 		foreach ($array as $key => $value) {
-			$col[] = "`$key`";
-			$val[] = ($value !== NULL) ? "'$value'" : "NULL";
+			$colunms[] = "`$key`";
+			$values[] = ($value !== NULL) ? "'$value'" : "NULL";
 		}
 		return [
-			"columns" => $col ?? [],
-			"values" => $val ?? []
+			"columns" => $colunms ?? [],
+			"values" => $values ?? []
 		];
 	}
 

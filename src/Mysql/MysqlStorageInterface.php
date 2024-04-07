@@ -18,60 +18,59 @@ interface MysqlStorageInterface {
 
 	/**
 	 * Метод добавления записи в текущую БД
-	 * @param string $tbl
+	 * @param string $table
 	 * @param array $data
-	 * @param array $modifier
 	 * @param bool $update
 	 * @return bool
 	 */
-	public function insert(string $tbl, array $data, bool $update = false) : bool;
+	public function insert(string $table, array $data, bool $update = false) : bool;
 
 	/**
-	 * @param string $tbl
+	 * @param string $table
 	 * @param array $data
 	 * @return bool
 	 */
-	public function batchInsert(string $tbl, array $data) : bool;
+	public function batchInsert(string $table, array $data) : bool;
 
 	/**
 	 * Метод редактирования записи в текущей БД по ID
-	 * @param string $tbl
+	 * @param string $table
 	 * @param array $data
 	 * @param int $id
 	 * @param array $modifier
 	 * @return bool
 	 */
-	public function updateById(string $tbl, array $data, int $id, array $modifier = []) : bool;
+	public function updateById(string $table, array $data, int $id, array $modifier = []) : bool;
 
 	/**
-	 * @param string $tbl
+	 * @param string $table
 	 * @param array $data
 	 * @param string $case
 	 * @param array $modifier
 	 * @return bool
 	 */
-	public function updateByParam(string $tbl, array $data, string $case, array $modifier = []) : bool;
+	public function updateByParam(string $table, array $data, string $case, array $modifier = []) : bool;
 
 	/**
-	 * @param string $tbl
+	 * @param string $table
 	 * @param array $data
 	 * @return bool
 	 */
-	public function replace(string $tbl, array $data) : bool;
+	public function replace(string $table, array $data) : bool;
 
 	/**
-	 * @param string $tbl
+	 * @param string $table
 	 * @param int $id
 	 * @return bool
 	 */
-	public function deleteById(string $tbl, int $id) : bool;
+	public function deleteById(string $table, int $id) : bool;
 
 	/**
-	 * @param string $tbl
+	 * @param string $table
 	 * @param string $case
 	 * @return bool
 	 */
-	public function deleteByParam(string $tbl, string $case) : bool;
+	public function deleteByParam(string $table, string $case) : bool;
 
 	/**
 	 * @param string $sql
@@ -84,23 +83,31 @@ interface MysqlStorageInterface {
 
 	/**
 	 * @param string $sql
-	 * @return array
+	 * @return bool|array
 	 */
 	public function findOne(string $sql) : bool|array;
 
 	/**
+	 * @param string $table
+	 * @param int $id
+	 * @param string $name
+	 * @return bool|array
+	 */
+	public function findById(string $table, int $id, string $name = 'id') : bool|array;
+
+	/**
 	 * Метод экранирования данных с учетом текущего подключения в т.ч для LIKE
-	 * @param string $var
+	 * @param string $string
 	 * @return string|null
 	 */
-	public function escapeReg(string $var) : ?string;
+	public function escapeReg(string $string) : ?string;
 
 	/**
 	 * Метод экранирования данных с учетом текущего подключения
-	 * @param string|null $var
+	 * @param string|null $string
 	 * @return string|null
 	 */
-	public function escapeStr(?string $var) : ?string;
+	public function escapeStr(?string $string) : ?string;
 
 	/**
 	 * Метод наполнения статичного массива с логами
