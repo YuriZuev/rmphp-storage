@@ -2,19 +2,22 @@
 
 namespace Rmphp\Storage\Mysql;
 
+use Mysqli;
+use mysqli_result;
+
 interface MysqlStorageInterface {
 
 	/**
-	 * @return \Mysqli
+	 * @return Mysqli
 	 */
-	public function mysql() : \Mysqli;
+	public function mysql() : Mysqli;
 
 	/**
 	 * Метод прямого запроса к текущей БД
 	 * @param string $sql
-	 * @return bool|\mysqli_result
+	 * @return bool|mysqli_result
 	 */
-	public function query(string $sql) : bool|\mysqli_result;
+	public function query(string $sql) : bool|mysqli_result;
 
 	/**
 	 * Метод добавления записи в текущую БД
@@ -36,11 +39,11 @@ interface MysqlStorageInterface {
 	 * Метод редактирования записи в текущей БД по ID
 	 * @param string $table
 	 * @param array $data
-	 * @param int $id
+	 * @param mixed $id
 	 * @param array $modifier
 	 * @return bool
 	 */
-	public function updateById(string $table, array $data, int $id, array $modifier = []) : bool;
+	public function updateById(string $table, array $data, mixed $id, array $modifier = []) : bool;
 
 	/**
 	 * @param string $table
@@ -60,10 +63,10 @@ interface MysqlStorageInterface {
 
 	/**
 	 * @param string $table
-	 * @param int $id
+	 * @param mixed $id
 	 * @return bool
 	 */
-	public function deleteById(string $table, int $id) : bool;
+	public function deleteById(string $table, mixed $id) : bool;
 
 	/**
 	 * @param string $table
@@ -89,11 +92,11 @@ interface MysqlStorageInterface {
 
 	/**
 	 * @param string $table
-	 * @param int $id
+	 * @param mixed $id
 	 * @param string $name
 	 * @return bool|array
 	 */
-	public function findById(string $table, int $id, string $name = 'id') : bool|array;
+	public function findById(string $table, mixed $id, string $name = 'id') : bool|array;
 
 	/**
 	 * Метод экранирования данных с учетом текущего подключения в т.ч для LIKE

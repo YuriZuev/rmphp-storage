@@ -39,11 +39,11 @@ class MysqlStorage implements MysqlStorageInterface {
 		try{
 			$result = $this->mysqli->query($sql);
 			if($this->mysqli->errno) throw new Exception();
-			$this->addLog("OK - ".$sql);
+			$this->addLog("OK - $sql");
 			return $result;
 		}
 		catch (Exception $exception){
-			$this->addLog("Err - SQL: ".$sql." | error: ".$this->mysqli->error);
+			$this->addLog("Err - SQL: $sql | error: ".$this->mysqli->error);
 			return false;
 		}
 	}
@@ -72,14 +72,15 @@ class MysqlStorage implements MysqlStorageInterface {
 	}
 
 	/** @inheritDoc */
-	public function updateById(string $table, array $data, int $id, array $modifier = []) : bool {
+	public function updateById(string $table, array $data, mixed $id, array $modifier = []) : bool {
 		$chunks = $this->getUpdateValue($data);
-		$sql = "update low_priority ".implode(" ", $modifier)." ".$this->escapeStr($table)." set ".implode(",", $chunks)." where id = '".$id."'";
+		$id = (is_numeric($id)) ? (int) $id : $this->escapeStr($id);
+		$sql = "update low_priority ".implode(" ", $modifier)." ".$this->escapeStr($table)." set ".implode(",", $chunks)." where id = '$id'";
 		return $this->query($sql);
 	}
 
 	/** @inheritDoc */
-	public function updateByParam(string $table, array $data, string $case,  array $modifier = []) : bool {
+	public function updateByParam(string $table, array $data, string $case, array $modifier = []) : bool {
 		$chunks = $this->getUpdateValue($data);
 		$sql = "update low_priority ".implode(" ", $modifier)." ".$this->escapeStr($table)." set ". implode(",", $chunks)." where ".$case;
 		return $this->query($sql);
@@ -94,8 +95,9 @@ class MysqlStorage implements MysqlStorageInterface {
 
 
 	/** @inheritDoc */
-	public function deleteById(string $table, int $id) : bool {
-		$sql = "delete low_priority from ".$this->escapeStr($table)." where id='.$id.'";
+	public function deleteById(string $table, mixed $id) : bool {
+		$id = (is_numeric($id)) ? (int) $id : $this->escapeStr($id);
+		$sql = "delete low_priority from ".$this->escapeStr($table)." where id='$id'";
 		// возвращаем число затронутых строк/false
 		return $this->query($sql);
 	}
@@ -139,8 +141,9 @@ class MysqlStorage implements MysqlStorageInterface {
 	}
 
 	/** @inheritDoc */
-	public function findById(string $table, int $id, string $name = 'id') : bool|array {
-		$result = $this->query("select * from ".$table." where `".$name."`=".$id." limit 0, 1");
+	public function findById(string $table, mixed $id, string $name = 'id') : bool|array {
+		$id = (is_numeric($id)) ? (int) $id : $this->escapeStr($id);
+		$result = $this->query("select * from ".$this->escapeStr($table)." where `$name`='$id' limit 0, 1");
 		if (!$result || $result->num_rows == 0) return false;
 		$data = new MysqlStorageData($result);
 		return $data->fetchOne();
