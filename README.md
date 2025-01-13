@@ -10,12 +10,12 @@ Stable version
 composer require rmphp/storage
 ```
 ```bash
-composer require rmphp/storage:"^3.0"
+composer require rmphp/storage:"^4.0"
 ```
 
 
 Dev version contains the latest changes
 
 ```bash
-composer require rmphp/storage:"3.x-dev"
+composer require rmphp/storage:"4.x-dev"
 ```

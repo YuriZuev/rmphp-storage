@@ -3,7 +3,7 @@
 namespace Rmphp\Storage\Mysql;
 
 
-class MysqlStorageData {
+class MysqlResultData {
 
 	private ?\mysqli_result $result;
 	private array $arrayData = [];

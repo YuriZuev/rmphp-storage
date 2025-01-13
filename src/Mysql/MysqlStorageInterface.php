@@ -80,15 +80,15 @@ interface MysqlStorageInterface {
 	 * @param int $ln
 	 * @param int $numPage
 	 * @param int $count
-	 * @return bool|MysqlStorageData
+	 * @return bool|MysqlResultData
 	 */
-	public function find(string $sql, int $ln = 0, int $numPage = 1, int $count=0) : bool|MysqlStorageData;
+	public function find(string $sql, int $ln = 0, int $numPage = 1, int $count=0) : bool|MysqlResultData;
 
 	/**
 	 * @param string $sql
 	 * @return bool|array
 	 */
-	public function findOne(string $sql) : bool|array;
+	public function findOne(string $sql) : bool|MysqlResultData;
 
 	/**
 	 * @param string $table
