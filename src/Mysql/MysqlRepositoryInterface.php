@@ -39,27 +39,24 @@ interface MysqlRepositoryInterface extends RepositoryInterface {
 
 	/**
 	 * @param EntityInterface $object
-	 * @param string|null $table
 	 * @return mixed
 	 * @throws RepositoryException
 	 */
-	public function saveEntity(EntityInterface $object, string $table = null) : mixed;
+	public function saveEntity(EntityInterface $object) : mixed;
 
 	/**
 	 * @param array $objects
-	 * @param string|null $table
 	 * @return array
 	 * @throws RepositoryException
 	 */
-	public function saveGroup(array $objects, string $table = null): array;
+	public function saveGroup(array $objects): array;
 
 	/**
 	 * @param EntityInterface $object
-	 * @param string|null $table
 	 * @return bool
 	 * @throws RepositoryException
 	 */
-	public function deleteEntity(EntityInterface $object, string $table = null) : bool;
+	public function deleteEntity(EntityInterface $object) : bool;
 
 	/**
 	 * @return array

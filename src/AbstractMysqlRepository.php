@@ -51,21 +51,18 @@ abstract class AbstractMysqlRepository extends AbstractRepository implements Mys
 
 
 	/** @inheritDoc */
-	public function saveEntity(EntityInterface $object, string $table = null) : mixed {
-		if(!isset($table)){
-			$this->checkConst();
-			$table = static::TABLE;
-		}
+	public function saveEntity(EntityInterface $object) : mixed {
+		$this->checkConst();
 		$in = $this->getProperties($object, function ($value){
 			return (is_string($value)) ? $this->mysql->escapeStr($value) : $value;
 		});
-		if(static::DEBUG) {$this->getSaveDebug($object, $in, $table); exit;}
+		if(static::DEBUG) {$this->getSaveDebug($object, $in, static::TABLE); exit;}
 		try {
-			if (!empty($object->getId()) && !empty($this->mysql->findById($table, $object->getId()))) {
-				$this->mysql->updateById($table, $in, $object->getId());
+			if (!empty($object->getId()) && !empty($this->mysql->findById(static::TABLE, $object->getId()))) {
+				$this->mysql->updateById(static::TABLE, $in, $object->getId());
 				return $object->getId();
 			} else {
-				$this->mysql->insert($table, $in);
+				$this->mysql->insert(static::TABLE, $in);
 				return (is_string($object->getId())) ? $object->getId() : $this->mysql->mysql()->insert_id;
 			}
 		} catch (\Throwable $throwable) {throw new RepositoryException($throwable->getMessage());}
@@ -73,14 +70,10 @@ abstract class AbstractMysqlRepository extends AbstractRepository implements Mys
 
 
 	/** @inheritDoc */
-	public function saveGroup(array $objects, string $table = null): array {
-		if(!isset($table)){
-			$this->checkConst();
-			$table = static::TABLE;
-		}
+	public function saveGroup(array $objects): array {
 		try{
 			$this->mysql->mysql()->begin_transaction();
-			foreach($objects as $object) $id[] = $this->saveEntity($object, $table);
+			foreach($objects as $object) $id[] = $this->saveEntity($object);
 			$this->mysql->mysql()->commit();
 			return $id ?? [];
 		}
@@ -92,13 +85,10 @@ abstract class AbstractMysqlRepository extends AbstractRepository implements Mys
 
 
 	/** @inheritDoc */
-	public function deleteEntity(EntityInterface $object, string $table = null) : bool {
-		if(!isset($table)){
-			$this->checkConst();
-			$table = static::TABLE;
-		}
+	public function deleteEntity(EntityInterface $object) : bool {
+		$this->checkConst();
 		if(!empty($object->getId())){
-			return $this->mysql->deleteById($table, $object->getId());
+			return $this->mysql->deleteById(static::TABLE, $object->getId());
 		}
 		return false;
 	}
