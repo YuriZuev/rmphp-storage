@@ -12,16 +12,80 @@ abstract class AbstractRepository implements RepositoryInterface {
 	static  array $classes = [];
 
 	/** @inheritDoc */
-	public function createFromData(string $class, $data) : mixed {
+	public function createFromData(string $class, $data) : object {
 		try {
 			if(!isset(static::$classes[$class])) static::$classes[$class] = new ReflectionClass($class);
-			$object = new $class;
+			return $this->fillObject(static::$classes[$class], new $class, $data);
+		}
+		catch (ReflectionException $exception) {
+			throw new RepositoryException($exception->getMessage());
+		}
+	}
+
+
+	/** @inheritDoc */
+	public function updateFromData(object $object, array $data) : object {
+		try {
+			$class = get_class($object);
+			if(!isset(static::$classes[$class])) static::$classes[$class] = new ReflectionClass($class);
+			return $this->fillObject(static::$classes[$class], clone $object, $data, true);
+		}
+		catch (RepositoryException|ReflectionException $exception) {
+			throw new RepositoryException($exception->getMessage());
+		}
+	}
+
+
+	/**
+	 * @param object $object
+	 * @param callable|null $method
+	 * @return array
+	 * @throws RepositoryException
+	 */
+	public function getProperties(object $object, callable $method = null) : array {
+		try{
+			$class = get_class($object);
+			if(!isset(static::$classes[$class])) static::$classes[$class] = new ReflectionClass($class);
 			/** @var ReflectionProperty $property */
-			foreach (static::$classes[$class]->getProperties() as $property) {
+			foreach(static::$classes[$class]->getProperties() as $property){
+				if(!$property->isInitialized($object)) continue;
+				if(static::$classes[$class]->hasMethod('get'.ucfirst($property->getName()))){
+					$fieldValue[$property->getName()] = $object->{'get'.ucfirst($property->getName())}($property->getValue($object));
+				}
+				elseif($property->hasType() && class_exists($property->getType()->getName()) && $property->getValue($object) instanceof ValueObjectInterface){
+					$fieldValue[$property->getName()] = $property->getValue($object)->get();
+				}
+				elseif(is_bool($property->getValue($object))){
+					$fieldValue[$property->getName()] = (int) $property->getValue($object);
+				}
+				else $fieldValue[$property->getName()] = $property->getValue($object);
+				$fieldNameSnakeCase = strtolower(preg_replace("'([A-Z])'", "_$1", $property->getName()));
+				if(false !== $fieldValue[$property->getName()]) $out[$fieldNameSnakeCase] = $fieldValue[$property->getName()];
+			}
+			return (isset($method)) ? array_map($method, $out ?? []) : $out ?? [];
+		}
+		catch (ReflectionException $exception) {
+			throw new RepositoryException($exception->getMessage());
+		}
+	}
+
+
+	/**
+	 * @param ReflectionClass $class
+	 * @param object $object
+	 * @param array $data
+	 * @param bool $update
+	 * @return mixed
+	 * @throws RepositoryException
+	 */
+	private function fillObject(ReflectionClass $class, object $object, array $data, bool $update = false) : mixed {
+		try {
+			foreach($class->getProperties() as $property){
+				if($update && !array_key_exists($property->getName(), $data) && !array_key_exists(strtolower(preg_replace("'([A-Z])'", "_$1", $property->getName())), $data)) continue;
 				// data[propertyName] ?? data[property_name] ?? null
 				$value = $data[$property->getName()] ?? $data[strtolower(preg_replace("'([A-Z])'", "_$1", $property->getName()))] ?? null;
 				// если есть внутренний метод (приоритетная обработка)
-				if(static::$classes[$class]->hasMethod('set'.ucfirst($property->getName()))) $object->{'set'.ucfirst($property->getName())}($value);
+				if($class->hasMethod('set'.ucfirst($property->getName()))) $object->{'set'.ucfirst($property->getName())}($value);
 				// Если тип свойства класс (valueObject)
 				elseif($property->hasType() && class_exists($property->getType()->getName())) $object->{$property->getName()} = (is_object($value)) ? $value : new ($property->getType()->getName())($value);
 				// если значения не пустое
@@ -35,62 +99,4 @@ abstract class AbstractRepository implements RepositoryInterface {
 			throw new RepositoryException($exception->getMessage());
 		}
 	}
-
-
-	/** @inheritDoc */
-	public function getAllProperties(object $class, callable $method = null) : array {
-		$properties = $this->initProperties($class);
-		return (isset($method)) ? array_map($method, $properties) : $properties;
-	}
-
-
-	/** @inheritDoc */
-	public function getProperties(object $class, callable $method = null) : array {
-		$properties = $this->initProperties($class);
-		foreach ($properties as $fieldName => $value) {
-			if(isset($value)) $out[$fieldName] = $value;
-		}
-		return (isset($method)) ? array_map($method, $out ?? []) : $out ?? [];
-	}
-
-
-	/**
-	 * @param object $class
-	 * @return array
-	 */
-	private function initProperties(object $class): array {
-		$objectData = get_object_vars($class);
-		foreach ($objectData as $fieldName => $value)
-		{
-			// если есть внутренний метод (приоритетная обработка)
-			if(method_exists($class, 'get'.ucfirst($fieldName))) {
-				$fieldValue[$fieldName] = $class->{'get'.ucfirst($fieldName)}($value);
-			}
-			// если тип свойства класс (valueObject)
-			elseif($value instanceof ValueObjectInterface) {
-				$fieldValue[$fieldName] = $value->get();
-			}
-			// если это логическое значение
-			elseif(is_bool($value)){
-				$fieldValue[$fieldName] = (int) $value;
-			}
-			// если это дробное число
-			elseif(is_float($value)) {
-				$fieldValue[$fieldName] = $value;
-			}
-			// если это целое число
-			elseif(is_int($value)) {
-				$fieldValue[$fieldName] = $value;
-			}
-			// если это строка
-			elseif(is_string($value)) {
-				$fieldValue[$fieldName] = $value;
-			}
-			// to option_id
-			$fieldNameSnakeCase = strtolower(preg_replace("'([A-Z])'", "_$1", $fieldName));
-			$out[$fieldNameSnakeCase] = $fieldValue[$fieldName] ?? null;
-		}
-		return $out ?? [];
-	}
-
 }

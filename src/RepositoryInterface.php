@@ -8,6 +8,7 @@
 
 namespace Rmphp\Storage;
 
+use ReflectionException;
 use Rmphp\Storage\Entity\EntityInterface;
 
 interface RepositoryInterface {
@@ -22,18 +23,20 @@ interface RepositoryInterface {
 
 
 	/**
-	 * @param object $class
-	 * @param callable|null $method
-	 * @return array
+	 * @param object $object
+	 * @param array $data
+	 * @return mixed
+	 * @throws RepositoryException
 	 */
-	public function getAllProperties(object $class, callable $method = null) : array;
+	public function updateFromData(object $object, array $data) : mixed;
 
 
 	/**
-	 * @param object $class
+	 * @param object $object
 	 * @param callable|null $method
 	 * @return array
+	 * @throws RepositoryException
 	 */
-	public function getProperties(object $class, callable $method = null) : array;
+	public function getProperties(object $object, callable $method = null) : array;
 
 }
