@@ -11,7 +11,7 @@ namespace Rmphp\Storage\Entity;
 interface EntityInterface {
 
 	/**
-	 * @return int|null
+	 * @return mixed
 	 */
 	public function getId(): mixed;
 
