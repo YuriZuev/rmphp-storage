@@ -48,7 +48,7 @@ abstract class AbstractRepository implements RepositoryInterface {
 			if(!isset(static::$classes[$class])) static::$classes[$class] = new ReflectionClass($class);
 			/** @var ReflectionProperty $property */
 			foreach(static::$classes[$class]->getProperties() as $property){
-				if(!$property->isInitialized($object)) continue;
+				if(!$property->isInitialized($object) || is_array($property->getValue($object))) continue;
 				if(static::$classes[$class]->hasMethod('get'.ucfirst($property->getName()))){
 					$fieldValue[$property->getName()] = $object->{'get'.ucfirst($property->getName())}($property->getValue($object));
 				}
