@@ -6,6 +6,8 @@ use Rmphp\Storage\Entity\EntityInterface;
 use Rmphp\Storage\Mysql\MysqlRepositoryInterface;
 use Rmphp\Storage\Mysql\MysqlResultData;
 use Rmphp\Storage\Mysql\MysqlStorageInterface;
+use Rmphp\Storage\Repository\AbstractRepository;
+use Rmphp\Storage\Repository\RepositoryException;
 
 abstract class AbstractMysqlRepository extends AbstractRepository implements MysqlRepositoryInterface {
 
@@ -58,7 +60,7 @@ abstract class AbstractMysqlRepository extends AbstractRepository implements Mys
 		$in = $this->getProperties($object, function ($value){
 			return (is_string($value)) ? $this->mysql->escapeStr($value) : $value;
 		});
-		if($this->getDebug()) {$this->debug($object, $in, $table); exit;}
+		if($this->getDebug()) {$this->debug($object, $in, $table, $this->getClassesCash(), $this->getRepositoryStack()); exit;}
 		try {
 			if (!empty($object->getId()) && !empty($this->mysql->findById($table, $object->getId()))) {
 				$this->mysql->updateById($table, $in, $object->getId());

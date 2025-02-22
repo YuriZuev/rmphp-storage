@@ -9,8 +9,8 @@
 namespace Rmphp\Storage\Mysql;
 
 use Rmphp\Storage\Entity\EntityInterface;
-use Rmphp\Storage\RepositoryException;
-use Rmphp\Storage\RepositoryInterface;
+use Rmphp\Storage\Repository\RepositoryException;
+use Rmphp\Storage\Repository\RepositoryInterface;
 
 interface MysqlRepositoryInterface extends RepositoryInterface {
 
