@@ -12,7 +12,6 @@ class AbstractDataObject {
 	private static array $constructorNullAvailableClasses = [];
 	private static array $stack  = [];
 
-	//TODO Имя и Папка где лежит и Зависимость
 	/**
 	 * @param ReflectionClass $class
 	 * @param object $object
@@ -72,9 +71,6 @@ class AbstractDataObject {
 					}
 					elseif(isset($value[$property->getName()])){
 						$object->{$property->getName()} = $value[$property->getName()];
-					}
-					elseif($property->getType()->allowsNull()){
-						$object->{$property->getName()} = null;
 					}
 				}
 			}

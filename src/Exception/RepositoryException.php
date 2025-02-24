@@ -1,6 +1,6 @@
 <?php
 
-namespace Rmphp\Storage\Repository;
+namespace Rmphp\Storage\Exception;
 
 use Throwable;
 

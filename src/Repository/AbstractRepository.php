@@ -7,6 +7,7 @@ use ReflectionClass;
 use ReflectionException;
 use Rmphp\Storage\Component\AbstractDataObject;
 use Rmphp\Storage\Entity\ValueObjectInterface;
+use Rmphp\Storage\Exception\RepositoryException;
 
 abstract class AbstractRepository extends AbstractDataObject implements RepositoryInterface {
 
@@ -26,10 +27,8 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 					$fieldValue[$property->getName()] = $object->{'get'.ucfirst($property->getName())}($property->getValue($object));
 				}
 				elseif($property->hasType() && class_exists($property->getType()->getName()) && $property->getValue($object) instanceof ValueObjectInterface){
-					$voClass = $property->getType()->getName();
-					if(!isset(self::$classes[$voClass])) self::$classes[$voClass] = new ReflectionClass($voClass);
-					$dd[$property->getName()] = self::$classes[$voClass];
-					$fieldValue[$property->getName()] = $property->getValue($object)->getValue();
+					$value = $property->getValue($object)->getValue();
+					if(isset($value)) $fieldValue[$property->getName()] = $value;
 				}
 				elseif(is_bool($property->getValue($object))){
 					$fieldValue[$property->getName()] = (int) $property->getValue($object);
@@ -38,12 +37,10 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 					$fieldValue[$property->getName()] = $property->getValue($object);
 				}
 
-				if(array_key_exists($property->getName(), $fieldValue)) {
+				if(false !== $fieldValue[$property->getName()]) {
 					$out[strtolower(preg_replace("'([A-Z])'", "_$1", $property->getName()))] = $fieldValue[$property->getName()];
 				}
 			}
-			//dd($fieldValue);
-			//dd($dd, self::$classes);
 			return (isset($method)) ? array_map($method, $out ?? []) : $out ?? [];
 		}
 		catch (ReflectionException $exception) {

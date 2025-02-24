@@ -9,6 +9,8 @@
 namespace Rmphp\Storage\Repository;
 
 
+use Rmphp\Storage\Exception\RepositoryException;
+
 interface RepositoryInterface {
 
 	/**
