@@ -60,7 +60,7 @@ abstract class AbstractMysqlRepository extends AbstractRepository implements Mys
 		$in = $this->getProperties($object, function ($value){
 			return (is_string($value)) ? $this->mysql->escapeStr($value) : $value;
 		});
-		if($this->getDebug()) {$this->debug($object, $in, $table, $this->getClassesCash(), $this->getRepositoryStack()); exit;}
+		if($this->getDebug()) {$this->debug($object, $in, $table, $this->getRepositoryStack()); exit;}
 		try {
 			if (!empty($object->getId()) && !empty($this->mysql->findById($table, $object->getId()))) {
 				$this->mysql->updateById($table, $in, $object->getId());
@@ -79,7 +79,7 @@ abstract class AbstractMysqlRepository extends AbstractRepository implements Mys
 		$in = array_map(function ($value){
 			return (is_string($value)) ? $this->mysql->escapeStr($value) : $value;
 		}, $data);
-		if($this->getDebug()) {$this->debug($data, $in, $table); exit;}
+		if($this->getDebug()) {$this->debug($data, $in, $table, $this->getRepositoryStack()); exit;}
 		try {
 			if (!empty($data[$primaryKey]) && !empty($this->mysql->findById($table, $data[$primaryKey], $primaryKey))) {
 				$this->mysql->updateById($table, $in, $data[$primaryKey]);
