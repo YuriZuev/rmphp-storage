@@ -9,7 +9,6 @@ use ReflectionException;
 class AbstractDataObject {
 
 	private static array $constructorEmptyAvailableClasses = [];
-	private static array $constructorNullAvailableClasses = [];
 	private static array $stack  = [];
 
 	/**
@@ -49,10 +48,6 @@ class AbstractDataObject {
 					elseif(isset($value[$property->getName()])){
 						$object->{$property->getName()} = new ($property->getType()->getName())($value[$property->getName()]);
 					}
-					// Значение NULL и VO может принимать null в виде единственного значения
-					elseif(array_key_exists($property->getName(), $value) && self::isNullAvailable($property->getType()->getName())) {
-						$object->{$property->getName()} = new ($property->getType()->getName())(null);
-					}
 					// Значения нет и VO может быть без параметров
 					elseif(self::isEmptyAvailable($property->getType()->getName())) {
 						$object->{$property->getName()} = new ($property->getType()->getName())();
@@ -88,18 +83,6 @@ class AbstractDataObject {
 	/**
 	 * @throws ReflectionException
 	 */
-	private static function isNullAvailable(string $class) : bool {
-		if(isset(self::$constructorNullAvailableClasses[$class])) return self::$constructorNullAvailableClasses[$class];
-		if(!$constructor = (new \ReflectionClass($class))->getConstructor()) return self::$constructorNullAvailableClasses[$class] = false;
-		$parameters = $constructor->getParameters();
-		if(count($parameters) == 1 && $parameters[0]->allowsNull()) return self::$constructorNullAvailableClasses[$class] = true;
-		return self::$constructorNullAvailableClasses[$class] = false;
-	}
-
-
-	/**
-	 * @throws ReflectionException
-	 */
 	private static function isEmptyAvailable(string $class) : bool {
 		if(isset(self::$constructorEmptyAvailableClasses[$class])) return self::$constructorEmptyAvailableClasses[$class];
 		if(!$constructor = (new \ReflectionClass($class))->getConstructor()) return self::$constructorEmptyAvailableClasses[$class] = false;
@@ -110,6 +93,7 @@ class AbstractDataObject {
 		}
 		return self::$constructorEmptyAvailableClasses[$class] = true;
 	}
+
 
 	/**
 	 * @return array

@@ -37,7 +37,7 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 					$fieldValue[$property->getName()] = $property->getValue($object);
 				}
 
-				if(false !== $fieldValue[$property->getName()]) {
+				if(array_key_exists($property->getName(), $fieldValue) && false !== $fieldValue[$property->getName()]) {
 					$out[strtolower(preg_replace("'([A-Z])'", "_$1", $property->getName()))] = $fieldValue[$property->getName()];
 				}
 			}
