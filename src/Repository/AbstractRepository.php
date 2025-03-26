@@ -48,11 +48,14 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 	}
 
 
-	/** @inheritDoc */
-	public function createFromData(string $class, array|object $data) : object {
+	/**
+	 * @inheritDoc
+	 * @throws RepositoryException
+	 */
+	public function createFromData(string $class, array|object $data, bool $onlyNotNull = false) : object {
 		try {
 			if(!isset(self::$classes[$class])) self::$classes[$class] = new ReflectionClass($class);
-			return self::fillObject(self::$classes[$class], new $class, (is_object($data)) ? get_object_vars($data) : $data);
+			return self::fillObject(self::$classes[$class], new $class, (is_object($data)) ? get_object_vars($data) : $data, false, $onlyNotNull);
 		}
 		catch (Exception $exception) {
 			throw new RepositoryException($exception->getMessage());
@@ -60,12 +63,15 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 	}
 
 
-	/** @inheritDoc */
-	public function updateFromData(object $object, array|object $data) : object {
+	/**
+	 * @inheritDoc
+	 * @throws RepositoryException
+	 */
+	public function updateFromData(object $object, array|object $data, bool $onlyNotNull = false) : object {
 		try {
 			$class = get_class($object);
 			if(!isset(self::$classes[$class])) self::$classes[$class] = new ReflectionClass($class);
-			return self::fillObject(self::$classes[$class], clone $object, (is_object($data)) ? get_object_vars($data) : $data, true);
+			return self::fillObject(self::$classes[$class], clone $object, (is_object($data)) ? get_object_vars($data) : $data, true, $onlyNotNull);
 		}
 		catch (Exception $exception) {
 			throw new RepositoryException($exception->getMessage());

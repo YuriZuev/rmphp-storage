@@ -16,10 +16,11 @@ class AbstractDataObject {
 	 * @param object $object
 	 * @param array $data
 	 * @param bool $update
+	 * @param bool $onlyNotNull
 	 * @return mixed
 	 * @throws Exception
 	 */
-	protected static function fillObject(ReflectionClass $class, object $object, array $data, bool $update = false) : mixed {
+	protected static function fillObject(ReflectionClass $class, object $object, array $data, bool $update = false, bool $onlyNotNull = false) : mixed {
 		try {
 			$value = [];
 			foreach($class->getProperties() as $property){
@@ -45,11 +46,14 @@ class AbstractDataObject {
 					if(is_object($value[$property->getName()])){
 						$object->{$property->getName()} = $value[$property->getName()];
 					}
-					elseif(isset($value[$property->getName()])){
+					elseif(isset($value[$property->getName()]) && $value[$property->getName()] != ""){
+						$object->{$property->getName()} = new ($property->getType()->getName())($value[$property->getName()]);
+					}
+					elseif(!$onlyNotNull && isset($value[$property->getName()])){
 						$object->{$property->getName()} = new ($property->getType()->getName())($value[$property->getName()]);
 					}
 					// Значения нет и VO может быть без параметров
-					elseif(self::isEmptyAvailable($property->getType()->getName())) {
+					elseif(!$onlyNotNull && self::isEmptyAvailable($property->getType()->getName())) {
 						$object->{$property->getName()} = new ($property->getType()->getName())();
 					}
 				}
@@ -64,7 +68,10 @@ class AbstractDataObject {
 					elseif($property->getType()->getName() == 'bool'){
 						$object->{$property->getName()} = (bool)$value[$property->getName()];
 					}
-					elseif(isset($value[$property->getName()])){
+					elseif(isset($value[$property->getName()]) && $value[$property->getName()] != ""){
+						$object->{$property->getName()} = $value[$property->getName()];
+					}
+					elseif(!$onlyNotNull && isset($value[$property->getName()])){
 						$object->{$property->getName()} = $value[$property->getName()];
 					}
 				}
