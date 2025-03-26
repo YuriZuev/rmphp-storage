@@ -27,8 +27,7 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 					$fieldValue[$property->getName()] = $object->{'get'.ucfirst($property->getName())}($property->getValue($object));
 				}
 				elseif($property->hasType() && class_exists($property->getType()->getName()) && $property->getValue($object) instanceof ValueObjectInterface){
-					$value = $property->getValue($object)->getValue();
-					if(isset($value)) $fieldValue[$property->getName()] = $value;
+					$fieldValue[$property->getName()] = $property->getValue($object)->getValue();
 				}
 				elseif(is_bool($property->getValue($object))){
 					$fieldValue[$property->getName()] = (int) $property->getValue($object);
