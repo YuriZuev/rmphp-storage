@@ -28,4 +28,12 @@ abstract class AbstractEntity implements EntityInterface {
 		return $this->$name ?? "";
 	}
 
+	/**
+	 * @param string $name
+	 * @return bool
+	 */
+	public function __isset(string $name): bool {
+		return isset($this->$name);
+	}
+
 }
