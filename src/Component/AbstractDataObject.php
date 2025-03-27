@@ -108,4 +108,5 @@ class AbstractDataObject {
 	protected function getFillObjectStack() : array {
 		return self::$stack;
 	}
+
 }
