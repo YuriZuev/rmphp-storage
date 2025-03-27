@@ -46,7 +46,7 @@ class AbstractDataObject {
 					if(is_object($value[$property->getName()])){
 						$object->{$property->getName()} = $value[$property->getName()];
 					}
-					elseif(isset($value[$property->getName()]) && $value[$property->getName()] != ""){
+					elseif(isset($value[$property->getName()]) && $value[$property->getName()] !== ""){
 						$object->{$property->getName()} = new ($property->getType()->getName())($value[$property->getName()]);
 					}
 					elseif($withNull && isset($value[$property->getName()])){
@@ -68,7 +68,7 @@ class AbstractDataObject {
 					elseif($property->getType()->getName() == 'bool'){
 						$object->{$property->getName()} = (bool)$value[$property->getName()];
 					}
-					elseif(isset($value[$property->getName()]) && $value[$property->getName()] != ""){
+					elseif(isset($value[$property->getName()]) && $value[$property->getName()] !== ""){
 						$object->{$property->getName()} = $value[$property->getName()];
 					}
 					elseif($withNull && isset($value[$property->getName()])){
