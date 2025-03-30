@@ -2,9 +2,11 @@
 
 namespace Rmphp\Storage\Repository;
 
+use App\Domain\ValueObject\Price;
 use Exception;
 use ReflectionClass;
 use Rmphp\Storage\Attribute\Entity;
+use Rmphp\Storage\Attribute\EntityWithoutEmpty;
 use Rmphp\Storage\Attribute\GetProperty;
 use Rmphp\Storage\Attribute\GetPropertyEmpty;
 use Rmphp\Storage\Attribute\GetPropertyEmptyIfNull;
@@ -29,6 +31,8 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 			}
 			/** @var Entity $entityAttributes */
 			$entityAttributes = self::$attributeObjects[$class][0];
+			if(!empty(self::$classes[$class]->getAttributes(EntityWithoutEmpty::class))) $entityAttributes->withoutEmpty = true;
+			if(!empty(self::$classes[$class]->getAttributes(GetPropertyEmptyIfNull::class))) $entityAttributes->withoutEmpty = true;
 
 			$fieldValue = [];
 			foreach(self::$classes[$class]->getProperties() as $property){
@@ -40,6 +44,7 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 				}
 				/** @var GetProperty $getPropertyAttributes */
 				$getPropertyAttributes = self::$attributeObjects[$class][$property->getName()];
+				if(!empty($property->getAttributes(GetPropertyEmptyIfNull::class))) $getPropertyAttributes->emptyIfNull = true;
 
 				if(!empty($property->getAttributes(GetPropertyEmpty::class)) || !empty($getPropertyAttributes->empty)) continue;
 
@@ -63,8 +68,13 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 						$valueObjectAttributes = self::$attributeObjects[$valueObjectClass];
 
 						if(!empty($valueObjectAttributes->propertyName) && self::$classes[$valueObjectClass]->hasProperty($valueObjectAttributes->propertyName)){
-							if(self::$classes[$valueObjectClass]->getProperty($valueObjectAttributes->propertyName)->isInitialized($property->getValue($object)))
+							if(self::$classes[$valueObjectClass]->getProperty($valueObjectAttributes->propertyName)->isInitialized($property->getValue($object))){
 								$fieldValue[$property->getName()] = self::$classes[$valueObjectClass]->getProperty($valueObjectAttributes->propertyName)->getValue($property->getValue($object));
+							}
+						} elseif(!empty($valueObjectAttributes->autoPropertyName) && count(self::$classes[$valueObjectClass]->getProperties()) === 1){
+							if(self::$classes[$valueObjectClass]->getProperties()[0]->isInitialized($property->getValue($object))){
+								$fieldValue[$property->getName()] = self::$classes[$valueObjectClass]->getProperties()[0]->getValue($property->getValue($object));
+							}
 						} else{
 							$fieldValue[$property->getName()] = $property->getValue($object)->getValue();
 						}
@@ -76,10 +86,7 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 						$fieldValue[$property->getName()] = $property->getValue($object);
 					}
 
-					if(
-						!isset($fieldValue[$property->getName()])
-						&& (!empty($property->getAttributes(GetPropertyEmptyIfNull::class)) || !empty($getPropertyAttributes->emptyIfNull) || !empty($entityAttributes->withoutNull))
-					) continue;
+					if(!isset($fieldValue[$property->getName()]) && (!empty($getPropertyAttributes->emptyIfNull) || !empty($entityAttributes->withoutEmpty))) continue;
 
 					if(array_key_exists($property->getName(), $fieldValue) && false !== $fieldValue[$property->getName()]) {
 						$columnName = !empty($getPropertyAttributes->keyName) ? $getPropertyAttributes->keyName : strtolower(preg_replace("'([A-Z])'", "_$1", $property->getName()));

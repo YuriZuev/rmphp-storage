@@ -6,6 +6,7 @@ use Exception;
 use ReflectionClass;
 use ReflectionException;
 use Rmphp\Storage\Attribute\Entity;
+use Rmphp\Storage\Attribute\EntityWithoutEmpty;
 
 abstract class AbstractDataObject {
 
@@ -32,6 +33,7 @@ abstract class AbstractDataObject {
 			}
 			/** @var Entity $entityAttributes */
 			$entityAttributes = self::$attributeObjects[$class->getName()][0];
+			if(!empty($class->getAttributes(EntityWithoutEmpty::class))) $entityAttributes->withoutEmpty = true;
 
 			$value = [];
 			foreach($class->getProperties() as $property){
