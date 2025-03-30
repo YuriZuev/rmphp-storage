@@ -60,7 +60,7 @@ abstract class AbstractMysqlRepository extends AbstractRepository implements Mys
 		$in = $this->getProperties($object, function ($value){
 			return (is_string($value)) ? $this->mysql->escapeStr($value) : $value;
 		});
-		if($this->getDebug()) {$this->debug($object, $in, $table, $this->getRepositoryStack()); exit;}
+		if($this->isDebug()) {$this->debug($object, $in, $table, ...$this->getDebugExtraData()); exit;}
 		try {
 			if (!empty($object->getId()) && !empty($this->mysql->findById($table, $object->getId()))) {
 				$this->mysql->updateById($table, $in, $object->getId());
@@ -79,7 +79,7 @@ abstract class AbstractMysqlRepository extends AbstractRepository implements Mys
 		$in = array_map(function ($value){
 			return (is_string($value)) ? $this->mysql->escapeStr($value) : $value;
 		}, $data);
-		if($this->getDebug()) {$this->debug($data, $in, $table, $this->getRepositoryStack()); exit;}
+		if($this->isDebug()) {$this->debug($data, $in, $table, ...$this->getDebugExtraData()); exit;}
 		try {
 			if (!empty($data[$primaryKey]) && !empty($this->mysql->findById($table, $data[$primaryKey], $primaryKey))) {
 				$this->mysql->updateById($table, $in, $data[$primaryKey]);
@@ -181,10 +181,17 @@ abstract class AbstractMysqlRepository extends AbstractRepository implements Mys
 	/**
 	 * @return bool
 	 */
-	private function getDebug(): bool {
+	private function isDebug(): bool {
 		if(!empty($this->debug)) return $this->debug;
 		if(!empty(static::DEBUG)) return static::DEBUG;
 		return false;
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getDebugExtraData() : array {
+		return [$this->getRepositoryStack(), $this->getClassesCache(), $this->getAttributesObjectsCache()];
 	}
 
 	/**

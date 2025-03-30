@@ -25,19 +25,19 @@ interface RepositoryInterface {
 	/**
 	 * @param string $class
 	 * @param array|object $data
-	 * @param bool $withNull
+	 * @param bool $withEmpty
 	 * @return mixed
 	 */
-	public function createFromData(string $class, array|object $data, bool $withNull = true) : mixed;
+	public function createFromData(string $class, array|object $data, bool $withEmpty = true) : mixed;
 
 
 	/**
 	 * @param object $object
 	 * @param array|object $data
-	 * @param bool $withNull
+	 * @param bool $withEmpty
 	 * @return mixed
 	 */
-	public function updateFromData(object $object, array|object $data, bool $withNull = true) : mixed;
+	public function updateFromData(object $object, array|object $data, bool $withEmpty = true) : mixed;
 
 
 	/**
