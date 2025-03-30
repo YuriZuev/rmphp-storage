@@ -63,7 +63,7 @@ abstract class AbstractDataObject {
 						$object->{$property->getName()} = $value[$property->getName()];
 						$case[$property->getName()] = 'VO: Object';
 					}
-					// значение есть
+					// значение не пустое
 					elseif(isset($value[$property->getName()]) && $value[$property->getName()] !== ""){
 						$object->{$property->getName()} = new ($property->getType()->getName())($value[$property->getName()]);
 						$case[$property->getName()] = 'VO: NewInstance';
