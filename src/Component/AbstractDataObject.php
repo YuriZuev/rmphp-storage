@@ -63,14 +63,10 @@ abstract class AbstractDataObject {
 						$object->{$property->getName()} = $value[$property->getName()];
 						$case[$property->getName()] = 'VO: Object';
 					}
-					// значение есть и не пустое
+					// значение есть
 					elseif(isset($value[$property->getName()]) && $value[$property->getName()] !== ""){
 						$object->{$property->getName()} = new ($property->getType()->getName())($value[$property->getName()]);
 						$case[$property->getName()] = 'VO: NewInstance';
-					}
-					elseif(($withEmpty && empty($dataAttributes->ignorEmpty)) && array_key_exists($property->getName(), $value)){
-						$object->{$property->getName()} = new ($property->getType()->getName())($value[$property->getName()]);
-						$case[$property->getName()] = 'VO: NewInstance withEmpty';
 					}
 					// Значения нет и VO может быть без параметров
 					elseif(($withEmpty && empty($dataAttributes->ignorEmpty)) && self::isEmptyAvailable($property->getType()->getName())) {
