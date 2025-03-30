@@ -5,7 +5,6 @@ namespace Rmphp\Storage\Repository;
 use Exception;
 use ReflectionClass;
 use Rmphp\Storage\Attribute\Entity;
-use Rmphp\Storage\Attribute\EntityIgnorEmpty;
 use Rmphp\Storage\Attribute\EntityNoReturnIfNull;
 use Rmphp\Storage\Attribute\Property;
 use Rmphp\Storage\Attribute\PropertyNoReturn;
@@ -30,8 +29,7 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 			}
 			/** @var Entity $entityAttributes */
 			$entityAttributes = self::$attributeObjects[$class][0];
-			if(!empty(self::$classes[$class]->getAttributes(EntityIgnorEmpty::class))) $entityAttributes->ignorEmpty = true;
-			if(!empty(self::$classes[$class]->getAttributes(EntityNoReturnIfNull::class))) $entityAttributes->ignorEmpty = true;
+			if(!empty(self::$classes[$class]->getAttributes(EntityNoReturnIfNull::class))) $entityAttributes->noReturnIfNull = true;
 
 			$fieldValue = [];
 			foreach(self::$classes[$class]->getProperties() as $property){
@@ -43,9 +41,9 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 				}
 				/** @var Property $propertyAttributes */
 				$propertyAttributes = self::$attributeObjects[$class][$property->getName()];
-				if(!empty($property->getAttributes(PropertyNoReturnIfNull::class))) $propertyAttributes->emptyIfNull = true;
+				if(!empty($property->getAttributes(PropertyNoReturnIfNull::class))) $propertyAttributes->noReturnIfNull = true;
 
-				if(!empty($property->getAttributes(PropertyNoReturn::class)) || !empty($propertyAttributes->empty)) continue;
+				if(!empty($property->getAttributes(PropertyNoReturn::class)) || !empty($propertyAttributes->noReturn)) continue;
 
 				if($property->isInitialized($object)) {
 
@@ -85,7 +83,7 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 						$fieldValue[$property->getName()] = $property->getValue($object);
 					}
 
-					if(!isset($fieldValue[$property->getName()]) && (!empty($propertyAttributes->emptyIfNull) || !empty($entityAttributes->ignorEmpty))) continue;
+					if(!isset($fieldValue[$property->getName()]) && (!empty($propertyAttributes->noReturnIfNull) || !empty($entityAttributes->noReturnIfNull))) continue;
 
 					if(array_key_exists($property->getName(), $fieldValue) && false !== $fieldValue[$property->getName()]) {
 						$columnName = !empty($propertyAttributes->keyName) ? $propertyAttributes->keyName : strtolower(preg_replace("'([A-Z])'", "_$1", $property->getName()));

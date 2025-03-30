@@ -5,8 +5,8 @@ namespace Rmphp\Storage\Component;
 use Exception;
 use ReflectionClass;
 use ReflectionException;
-use Rmphp\Storage\Attribute\Entity;
-use Rmphp\Storage\Attribute\EntityIgnorEmpty;
+use Rmphp\Storage\Attribute\Data;
+use Rmphp\Storage\Attribute\DataIgnorEmpty;
 
 abstract class AbstractDataObject {
 
@@ -27,13 +27,13 @@ abstract class AbstractDataObject {
 	protected static function fillObject(ReflectionClass $class, object $object, array $data, bool $update = false, bool $withEmpty = true) : mixed {
 		try {
 			if(!isset(self::$attributeObjects[$class->getName()][0])){
-				self::$attributeObjects[$class->getName()][0] = !empty($class->getAttributes(Entity::class))
-					? $class->getAttributes(Entity::class)[0]->newInstance()
-					: new Entity();
+				self::$attributeObjects[$class->getName()][0] = !empty($class->getAttributes(Data::class))
+					? $class->getAttributes(Data::class)[0]->newInstance()
+					: new Data();
 			}
-			/** @var Entity $entityAttributes */
-			$entityAttributes = self::$attributeObjects[$class->getName()][0];
-			if(!empty($class->getAttributes(EntityIgnorEmpty::class))) $entityAttributes->ignorEmpty = true;
+			/** @var Data $dataAttributes */
+			$dataAttributes = self::$attributeObjects[$class->getName()][0];
+			if(!empty($class->getAttributes(DataIgnorEmpty::class))) $dataAttributes->ignorEmpty = true;
 
 			$value = [];
 			foreach($class->getProperties() as $property){
@@ -68,12 +68,12 @@ abstract class AbstractDataObject {
 						$object->{$property->getName()} = new ($property->getType()->getName())($value[$property->getName()]);
 						$case[$property->getName()] = 'VO: NewInstance';
 					}
-					elseif(($withEmpty && empty($entityAttributes->ignorEmpty)) && array_key_exists($property->getName(), $value)){
+					elseif(($withEmpty && empty($dataAttributes->ignorEmpty)) && array_key_exists($property->getName(), $value)){
 						$object->{$property->getName()} = new ($property->getType()->getName())($value[$property->getName()]);
 						$case[$property->getName()] = 'VO: NewInstance withEmpty';
 					}
 					// Значения нет и VO может быть без параметров
-					elseif(($withEmpty && empty($entityAttributes->ignorEmpty)) && self::isEmptyAvailable($property->getType()->getName())) {
+					elseif(($withEmpty && empty($dataAttributes->ignorEmpty)) && self::isEmptyAvailable($property->getType()->getName())) {
 						$object->{$property->getName()} = new ($property->getType()->getName())();
 						$case[$property->getName()] = 'VO: Without params';
 					}

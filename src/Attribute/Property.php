@@ -9,8 +9,8 @@ class Property {
 
 	public function __construct(
 		public ?string $keyName = null,
-		public bool $empty = false,
-		public bool $emptyIfNull = false,
+		public bool $noReturn = false,
+		public bool $noReturnIfNull = false,
 	) {}
 
 }
