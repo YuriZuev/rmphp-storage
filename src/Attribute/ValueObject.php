@@ -8,7 +8,7 @@ use Attribute;
 class ValueObject {
 
 	public function __construct(
-		public bool $autoPropertyName = true,
+		public bool $autoPropertyName = false,
 		public ?string $propertyName = null,
 	) {}
 

@@ -10,7 +10,7 @@ use Rmphp\Storage\Attribute\Property;
 use Rmphp\Storage\Attribute\PropertyNoReturn;
 use Rmphp\Storage\Attribute\PropertyNoReturnIfNull;
 use Rmphp\Storage\Attribute\ValueObject;
-use Rmphp\Storage\Attribute\ValueObjectWithoutAutoPropertyName;
+use Rmphp\Storage\Attribute\ValueObjectAutoPropertyName;
 use Rmphp\Storage\Component\AbstractDataObject;
 use Rmphp\Storage\Exception\RepositoryException;
 
@@ -62,18 +62,25 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 								: new ValueObject();
 						}
 						$valueObjectAttributes = self::$attributeObjects[$valueObjectClass];
-						if(!empty(self::$classes[$valueObjectClass]->getAttributes(ValueObjectWithoutAutoPropertyName::class))) $valueObjectAttributes->autoPropertyName = false;
+						if(!empty(self::$classes[$valueObjectClass]->getAttributes(ValueObjectAutoPropertyName::class))) $valueObjectAttributes->autoPropertyName = true;
 
 						if(!empty($valueObjectAttributes->propertyName) && self::$classes[$valueObjectClass]->hasProperty($valueObjectAttributes->propertyName)){
 							if(self::$classes[$valueObjectClass]->getProperty($valueObjectAttributes->propertyName)->isInitialized($property->getValue($object))){
 								$fieldValue[$property->getName()] = self::$classes[$valueObjectClass]->getProperty($valueObjectAttributes->propertyName)->getValue($property->getValue($object));
 							}
-						} elseif(!empty($valueObjectAttributes->autoPropertyName) && count(self::$classes[$valueObjectClass]->getProperties()) === 1){
+						}
+						elseif(!empty($valueObjectAttributes->autoPropertyName) && count(self::$classes[$valueObjectClass]->getProperties()) === 1){
 							if(self::$classes[$valueObjectClass]->getProperties()[0]->isInitialized($property->getValue($object))){
 								$fieldValue[$property->getName()] = self::$classes[$valueObjectClass]->getProperties()[0]->getValue($property->getValue($object));
 							}
-						} elseif(self::$classes[$valueObjectClass]->hasMethod('getValue')){
+						}
+						elseif(self::$classes[$valueObjectClass]->hasMethod('getValue')){
 							$fieldValue[$property->getName()] = $property->getValue($object)->getValue();
+						}
+						elseif(count(self::$classes[$valueObjectClass]->getProperties()) === 1){
+							if(self::$classes[$valueObjectClass]->getProperties()[0]->isInitialized($property->getValue($object))){
+								$fieldValue[$property->getName()] = self::$classes[$valueObjectClass]->getProperties()[0]->getValue($property->getValue($object));
+							}
 						}
 					}
 					elseif(is_bool($property->getValue($object))){
