@@ -6,7 +6,7 @@ use Exception;
 use ReflectionClass;
 use ReflectionException;
 use Rmphp\Storage\Attribute\Entity;
-use Rmphp\Storage\Attribute\EntityWithoutEmpty;
+use Rmphp\Storage\Attribute\EntityIgnorEmpty;
 
 abstract class AbstractDataObject {
 
@@ -33,7 +33,7 @@ abstract class AbstractDataObject {
 			}
 			/** @var Entity $entityAttributes */
 			$entityAttributes = self::$attributeObjects[$class->getName()][0];
-			if(!empty($class->getAttributes(EntityWithoutEmpty::class))) $entityAttributes->withoutEmpty = true;
+			if(!empty($class->getAttributes(EntityIgnorEmpty::class))) $entityAttributes->ignorEmpty = true;
 
 			$value = [];
 			foreach($class->getProperties() as $property){
@@ -68,16 +68,15 @@ abstract class AbstractDataObject {
 						$object->{$property->getName()} = new ($property->getType()->getName())($value[$property->getName()]);
 						$case[$property->getName()] = 'VO: NewInstance';
 					}
-					elseif(($withEmpty && empty($entityAttributes->withoutEmpty)) && array_key_exists($property->getName(), $value)){
+					elseif(($withEmpty && empty($entityAttributes->ignorEmpty)) && array_key_exists($property->getName(), $value)){
 						$object->{$property->getName()} = new ($property->getType()->getName())($value[$property->getName()]);
 						$case[$property->getName()] = 'VO: NewInstance withEmpty';
 					}
 					// Значения нет и VO может быть без параметров
-					elseif(($withEmpty && empty($entityAttributes->withoutEmpty)) && self::isEmptyAvailable($property->getType()->getName())) {
+					elseif(($withEmpty && empty($entityAttributes->ignorEmpty)) && self::isEmptyAvailable($property->getType()->getName())) {
 						$object->{$property->getName()} = new ($property->getType()->getName())();
 						$case[$property->getName()] = 'VO: Without params';
 					}
-
 				}
 				// Базовые типы при наличии значения
 				elseif(array_key_exists($property->getName(), $value)){

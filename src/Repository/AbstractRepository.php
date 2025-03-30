@@ -2,19 +2,18 @@
 
 namespace Rmphp\Storage\Repository;
 
-use App\Domain\ValueObject\Price;
 use Exception;
 use ReflectionClass;
 use Rmphp\Storage\Attribute\Entity;
-use Rmphp\Storage\Attribute\EntityWithoutEmpty;
-use Rmphp\Storage\Attribute\GetProperty;
-use Rmphp\Storage\Attribute\GetPropertyEmpty;
-use Rmphp\Storage\Attribute\GetPropertyEmptyIfNull;
+use Rmphp\Storage\Attribute\EntityIgnorEmpty;
+use Rmphp\Storage\Attribute\EntityNoReturnIfNull;
+use Rmphp\Storage\Attribute\Property;
+use Rmphp\Storage\Attribute\PropertyNoReturn;
+use Rmphp\Storage\Attribute\PropertyNoReturnIfNull;
 use Rmphp\Storage\Attribute\ValueObject;
+use Rmphp\Storage\Attribute\ValueObjectWithoutAutoPropertyName;
 use Rmphp\Storage\Component\AbstractDataObject;
-use Rmphp\Storage\Entity\ValueObjectInterface;
 use Rmphp\Storage\Exception\RepositoryException;
-use Throwable;
 
 abstract class AbstractRepository extends AbstractDataObject implements RepositoryInterface {
 
@@ -31,22 +30,22 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 			}
 			/** @var Entity $entityAttributes */
 			$entityAttributes = self::$attributeObjects[$class][0];
-			if(!empty(self::$classes[$class]->getAttributes(EntityWithoutEmpty::class))) $entityAttributes->withoutEmpty = true;
-			if(!empty(self::$classes[$class]->getAttributes(GetPropertyEmptyIfNull::class))) $entityAttributes->withoutEmpty = true;
+			if(!empty(self::$classes[$class]->getAttributes(EntityIgnorEmpty::class))) $entityAttributes->ignorEmpty = true;
+			if(!empty(self::$classes[$class]->getAttributes(EntityNoReturnIfNull::class))) $entityAttributes->ignorEmpty = true;
 
 			$fieldValue = [];
 			foreach(self::$classes[$class]->getProperties() as $property){
 
 				if(!isset(self::$attributeObjects[$class][$property->getName()])){
-					self::$attributeObjects[$class][$property->getName()] = !empty($property->getAttributes(GetProperty::class))
-						? $property->getAttributes(GetProperty::class)[0]->newInstance()
-						: new GetProperty();
+					self::$attributeObjects[$class][$property->getName()] = !empty($property->getAttributes(Property::class))
+						? $property->getAttributes(Property::class)[0]->newInstance()
+						: new Property();
 				}
-				/** @var GetProperty $getPropertyAttributes */
-				$getPropertyAttributes = self::$attributeObjects[$class][$property->getName()];
-				if(!empty($property->getAttributes(GetPropertyEmptyIfNull::class))) $getPropertyAttributes->emptyIfNull = true;
+				/** @var Property $propertyAttributes */
+				$propertyAttributes = self::$attributeObjects[$class][$property->getName()];
+				if(!empty($property->getAttributes(PropertyNoReturnIfNull::class))) $propertyAttributes->emptyIfNull = true;
 
-				if(!empty($property->getAttributes(GetPropertyEmpty::class)) || !empty($getPropertyAttributes->empty)) continue;
+				if(!empty($property->getAttributes(PropertyNoReturn::class)) || !empty($propertyAttributes->empty)) continue;
 
 				if($property->isInitialized($object)) {
 
@@ -55,8 +54,7 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 					if(self::$classes[$class]->hasMethod('get'.ucfirst($property->getName()))){
 						$fieldValue[$property->getName()] = $object->{'get'.ucfirst($property->getName())}($property->getValue($object));
 					}
-					elseif($property->hasType() && class_exists($property->getType()->getName()) && $property->getValue($object) instanceof ValueObjectInterface){
-
+					elseif($property->hasType() && class_exists($property->getType()->getName())){
 						$valueObjectClass = get_class($property->getValue($object));
 						if(!isset(self::$classes[$valueObjectClass])) self::$classes[$valueObjectClass] = new ReflectionClass($valueObjectClass);
 
@@ -66,6 +64,7 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 								: new ValueObject();
 						}
 						$valueObjectAttributes = self::$attributeObjects[$valueObjectClass];
+						if(!empty(self::$classes[$valueObjectClass]->getAttributes(ValueObjectWithoutAutoPropertyName::class))) $valueObjectAttributes->autoPropertyName = false;
 
 						if(!empty($valueObjectAttributes->propertyName) && self::$classes[$valueObjectClass]->hasProperty($valueObjectAttributes->propertyName)){
 							if(self::$classes[$valueObjectClass]->getProperty($valueObjectAttributes->propertyName)->isInitialized($property->getValue($object))){
@@ -75,7 +74,7 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 							if(self::$classes[$valueObjectClass]->getProperties()[0]->isInitialized($property->getValue($object))){
 								$fieldValue[$property->getName()] = self::$classes[$valueObjectClass]->getProperties()[0]->getValue($property->getValue($object));
 							}
-						} else{
+						} elseif(self::$classes[$valueObjectClass]->hasMethod('getValue')){
 							$fieldValue[$property->getName()] = $property->getValue($object)->getValue();
 						}
 					}
@@ -86,15 +85,14 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 						$fieldValue[$property->getName()] = $property->getValue($object);
 					}
 
-					if(!isset($fieldValue[$property->getName()]) && (!empty($getPropertyAttributes->emptyIfNull) || !empty($entityAttributes->withoutEmpty))) continue;
+					if(!isset($fieldValue[$property->getName()]) && (!empty($propertyAttributes->emptyIfNull) || !empty($entityAttributes->ignorEmpty))) continue;
 
 					if(array_key_exists($property->getName(), $fieldValue) && false !== $fieldValue[$property->getName()]) {
-						$columnName = !empty($getPropertyAttributes->keyName) ? $getPropertyAttributes->keyName : strtolower(preg_replace("'([A-Z])'", "_$1", $property->getName()));
+						$columnName = !empty($propertyAttributes->keyName) ? $propertyAttributes->keyName : strtolower(preg_replace("'([A-Z])'", "_$1", $property->getName()));
 						$out[$columnName] = $fieldValue[$property->getName()];
 					}
 				}
 			}
-			//dd($this->getAttributesObjectsCache());
 			return (isset($method)) ? array_map($method, $out ?? []) : $out ?? [];
 		}
 		catch (\ReflectionException $exception) {
