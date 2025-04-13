@@ -25,7 +25,7 @@ abstract class AbstractEntity implements EntityInterface {
 	 * @return string
 	 */
 	public function __get(string $name) {
-		return $this->$name ?? "";
+		return $this->$name ?? null;
 	}
 
 	/**
