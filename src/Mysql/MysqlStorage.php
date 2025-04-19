@@ -13,26 +13,23 @@ class MysqlStorage implements MysqlStorageInterface {
 	private Mysqli $mysqli;
 
 	/**
-	 * Внутренний конструктор подключения к БД
-	 * Mysql constructor.
-	 * @param object $params
+	 * @param array $paramsArray
 	 * @throws Exception
 	 */
-	public function __construct(
-		private readonly object $params
-	) {
+	public function __construct(array $paramsArray) {
+		$params = (object) $paramsArray;
 		$this->mysqli = new mysqli(
-			$this->params->host,
-			$this->params->user,
-			$this->params->pass,
-			$this->params->base
+			$params->host,
+			$params->user,
+			$params->pass,
+			$params->base
 		);
 		// выводим ошибку при неудачном подключении
 		if ($this->mysqli->connect_errno) {
 			throw new Exception($this->mysqli->connect_errno);
 		}
-		$this->mysqli->set_charset("utf8");
-		if(!empty($this->params->logsEnable)) $this->logsEnabled = true;
+		$this->mysqli->set_charset($params->chartset ?? "utf8");
+		if(!empty($params->logs)) $this->logsEnabled = true;
 	}
 
 	/** @inheritDoc */
