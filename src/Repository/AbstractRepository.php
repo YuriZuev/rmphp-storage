@@ -10,7 +10,8 @@ use Rmphp\Storage\Attribute\Property;
 use Rmphp\Storage\Attribute\PropertyNoReturn;
 use Rmphp\Storage\Attribute\PropertyNoReturnIfNull;
 use Rmphp\Storage\Attribute\ValueObject;
-use Rmphp\Storage\Attribute\ValueObjectAutoPropertyName;
+use Rmphp\Storage\Attribute\ValueObjectFirstProperty;
+use Rmphp\Storage\Attribute\ValueObjectPropertyName;
 use Rmphp\Storage\Component\AbstractDataObject;
 use Rmphp\Storage\Exception\RepositoryException;
 
@@ -60,27 +61,28 @@ abstract class AbstractRepository extends AbstractDataObject implements Reposito
 							self::$attributeObjects[$valueObjectClass] = !empty(self::$classes[$valueObjectClass]->getAttributes(ValueObject::class))
 								? self::$classes[$valueObjectClass]->getAttributes(ValueObject::class)[0]->newInstance()
 								: new ValueObject();
+							if(!empty(self::$classes[$valueObjectClass]->getAttributes(ValueObjectFirstProperty::class))) {
+								self::$attributeObjects[$valueObjectClass]->firstProperty = true;
+							}
+							if(!empty(self::$classes[$valueObjectClass]->getAttributes(ValueObjectPropertyName::class))) {
+								$propertyName = self::$classes[$valueObjectClass]->getAttributes(ValueObjectPropertyName::class)[0]->newInstance();
+								if(isset($propertyName->name)) self::$attributeObjects[$valueObjectClass]->propertyName = $propertyName->name;
+							}
 						}
 						$valueObjectAttributes = self::$attributeObjects[$valueObjectClass];
-						if(!empty(self::$classes[$valueObjectClass]->getAttributes(ValueObjectAutoPropertyName::class))) $valueObjectAttributes->autoPropertyName = true;
 
 						if(!empty($valueObjectAttributes->propertyName) && self::$classes[$valueObjectClass]->hasProperty($valueObjectAttributes->propertyName)){
 							if(self::$classes[$valueObjectClass]->getProperty($valueObjectAttributes->propertyName)->isInitialized($property->getValue($object))){
 								$fieldValue[$property->getName()] = self::$classes[$valueObjectClass]->getProperty($valueObjectAttributes->propertyName)->getValue($property->getValue($object));
 							}
 						}
-						elseif(!empty($valueObjectAttributes->autoPropertyName) && count(self::$classes[$valueObjectClass]->getProperties()) === 1){
+						elseif(!empty($valueObjectAttributes->firstProperty) && count(self::$classes[$valueObjectClass]->getProperties()) > 0){
 							if(self::$classes[$valueObjectClass]->getProperties()[0]->isInitialized($property->getValue($object))){
 								$fieldValue[$property->getName()] = self::$classes[$valueObjectClass]->getProperties()[0]->getValue($property->getValue($object));
 							}
 						}
 						elseif(self::$classes[$valueObjectClass]->hasMethod('getValue')){
 							$fieldValue[$property->getName()] = $property->getValue($object)->getValue();
-						}
-						elseif(count(self::$classes[$valueObjectClass]->getProperties()) === 1){
-							if(self::$classes[$valueObjectClass]->getProperties()[0]->isInitialized($property->getValue($object))){
-								$fieldValue[$property->getName()] = self::$classes[$valueObjectClass]->getProperties()[0]->getValue($property->getValue($object));
-							}
 						}
 					}
 					elseif(is_bool($property->getValue($object))){

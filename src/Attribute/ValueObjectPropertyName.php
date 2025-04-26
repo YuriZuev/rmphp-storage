@@ -5,11 +5,10 @@ namespace Rmphp\Storage\Attribute;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_CLASS)]
-class ValueObject {
+class ValueObjectPropertyName {
 
 	public function __construct(
-		public ?string $propertyName = null,
-		public bool $firstProperty = false
+		public ?string $name = null,
 	) {}
 
 }
