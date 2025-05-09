@@ -115,7 +115,7 @@ class MysqlStorage implements MysqlStorageInterface {
 
 
 	/** @inheritDoc */
-	public function find(string $sql, int $ln=0, int $numPage=1, int $count=0): bool|MysqlResultData {
+	public function find(string $sql, int $ln=0, int $numPage=1, int $count=0): ?MysqlResultData {
 
 		if ($ln > 1) {
 			$cnts = (!empty($count)) ? $count : $this->query($sql)->num_rows;
@@ -128,7 +128,7 @@ class MysqlStorage implements MysqlStorageInterface {
 		}
 
 		$result = $this->query($sql.$limit);
-		if (!$result || $result->num_rows == 0) return false;
+		if (!$result || $result->num_rows == 0) return null;
 
 		$data = new MysqlResultData($result);
 		$data->count = $cnts ?? 0;
@@ -137,17 +137,17 @@ class MysqlStorage implements MysqlStorageInterface {
 	}
 
 	/** @inheritDoc */
-	public function findOne(string $sql) : bool|MysqlResultData {
+	public function findOne(string $sql) : ?MysqlResultData {
 		$result = $this->query($sql." limit 0, 1");
-		if (!$result || $result->num_rows == 0) return false;
+		if (!$result || $result->num_rows == 0) return null;
 		return new MysqlResultData($result);
 	}
 
 	/** @inheritDoc */
-	public function findById(string $table, mixed $id, string $name = 'id') : bool|array {
+	public function findById(string $table, mixed $id, string $name = 'id') : ?array {
 		$id = (is_numeric($id)) ? (int) $id : $this->escapeStr($id);
 		$result = $this->query("select * from ".$this->escapeStr($table)." where `$name`='$id' limit 0, 1");
-		if (!$result || $result->num_rows == 0) return false;
+		if (!$result || $result->num_rows == 0) return null;
 		$data = new MysqlResultData($result);
 		return $data->fetchOne();
 	}

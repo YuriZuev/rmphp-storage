@@ -82,13 +82,13 @@ interface MysqlStorageInterface {
 	 * @param int $count
 	 * @return bool|MysqlResultData
 	 */
-	public function find(string $sql, int $ln = 0, int $numPage = 1, int $count=0) : bool|MysqlResultData;
+	public function find(string $sql, int $ln = 0, int $numPage = 1, int $count=0) : ?MysqlResultData;
 
 	/**
 	 * @param string $sql
 	 * @return bool|array
 	 */
-	public function findOne(string $sql) : bool|MysqlResultData;
+	public function findOne(string $sql) : ?MysqlResultData;
 
 	/**
 	 * @param string $table
@@ -96,7 +96,7 @@ interface MysqlStorageInterface {
 	 * @param string $name
 	 * @return bool|array
 	 */
-	public function findById(string $table, mixed $id, string $name = 'id') : bool|array;
+	public function findById(string $table, mixed $id, string $name = 'id') : ?array;
 
 	/**
 	 * Метод экранирования данных с учетом текущего подключения в т.ч для LIKE
