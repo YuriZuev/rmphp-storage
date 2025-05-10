@@ -25,7 +25,7 @@ abstract class AbstractMysqlRepository extends AbstractRepository implements Mys
 
 
 	/** @inheritDoc */
-	public function createFromResult(string $class, bool|MysqlResultData $result, callable $function = null): mixed {
+	public function createFromResult(string $class, ?MysqlResultData $result, callable $function = null): mixed {
 		if($result instanceof MysqlResultData) {
 			$val = (isset($function)) ? $function($result->fetchOne()) : $result->fetchOne();
 			$out = $this->createFromData($class, $val);
@@ -35,7 +35,7 @@ abstract class AbstractMysqlRepository extends AbstractRepository implements Mys
 
 
 	/** @inheritDoc */
-	public function createListFromResult(string $class, bool|MysqlResultData $result, callable $function = null): array {
+	public function createListFromResult(string $class, ?MysqlResultData $result, callable $function = null): array {
 		if($result instanceof MysqlResultData) {
 			foreach($result->fetch() as $resultValue) {
 				$val = (isset($function)) ? $function($resultValue) : $resultValue;

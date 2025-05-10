@@ -16,21 +16,19 @@ interface MysqlRepositoryInterface extends RepositoryInterface {
 
 	/**
 	 * @param string $class
-	 * @param bool|MysqlResultData $result
+	 * @param MysqlResultData|null $result
 	 * @param callable|null $function
 	 * @return mixed
-	 * @throws RepositoryException
 	 */
-	public function createFromResult(string $class, bool|MysqlResultData $result, callable $function = null): mixed;
+	public function createFromResult(string $class, ?MysqlResultData $result, callable $function = null): mixed;
 
 	/**
 	 * @param string $class
-	 * @param bool|MysqlResultData $result
+	 * @param MysqlResultData|null $result
 	 * @param callable|null $function
 	 * @return array
-	 * @throws RepositoryException
 	 */
-	public function createListFromResult(string $class, bool|MysqlResultData $result, callable $function = null): array;
+	public function createListFromResult(string $class, ?MysqlResultData $result, callable $function = null): array;
 
 	/**
 	 * @param int $id
