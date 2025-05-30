@@ -59,7 +59,7 @@ abstract class AbstractDataObject {
 				// Если тип свойства класс (valueObject)
 				elseif($property->hasType() && class_exists($property->getType()->getName())) {
 					// значение объект
-					if(is_object($value[$property->getName()])){
+					if(isset($value[$property->getName()]) && is_object($value[$property->getName()])){
 						$object->{$property->getName()} = $value[$property->getName()];
 						$case[$property->getName()] = 'VO: Object';
 					}
