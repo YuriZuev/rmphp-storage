@@ -23,7 +23,7 @@ abstract class AbstractMysqlRepository implements MysqlRepositoryInterface {
 
 	public function __construct(
 		public readonly MysqlStorageInterface $mysql,
-		protected readonly ObjectDataMapper $mapper
+		public readonly ObjectDataMapper $mapper
 	) {}
 
 	/**

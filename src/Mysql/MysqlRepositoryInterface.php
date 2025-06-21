@@ -12,7 +12,10 @@ use Rmphp\ODM\ObjectDataMapper;
 use Rmphp\Storage\Repository\EntityInterface;
 use Rmphp\Storage\Repository\RepositoryException;
 
-
+/**
+ * @property MysqlStorageInterface $mysql
+ * @property ObjectDataMapper $mapper
+ */
 interface MysqlRepositoryInterface {
 
 	/**
