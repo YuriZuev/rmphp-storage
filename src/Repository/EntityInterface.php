@@ -6,7 +6,7 @@
  * Time: 3:58
  */
 
-namespace Rmphp\Storage\Entity;
+namespace Rmphp\Storage\Repository;
 
 interface EntityInterface {
 

@@ -2,12 +2,12 @@
 
 namespace Rmphp\Storage;
 
-use Rmphp\Storage\Entity\EntityInterface;
-use Rmphp\Storage\Exception\RepositoryException;
+use Rmphp\ODM\AbstractRepository;
 use Rmphp\Storage\Mysql\MysqlRepositoryInterface;
 use Rmphp\Storage\Mysql\MysqlResultData;
 use Rmphp\Storage\Mysql\MysqlStorageInterface;
-use Rmphp\Storage\Repository\AbstractRepository;
+use Rmphp\Storage\Repository\EntityInterface;
+use Rmphp\Storage\Repository\RepositoryException;
 
 abstract class AbstractMysqlRepository extends AbstractRepository implements MysqlRepositoryInterface {
 

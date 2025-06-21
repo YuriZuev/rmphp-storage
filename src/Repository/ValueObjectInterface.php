@@ -1,6 +1,6 @@
 <?php
 
-namespace Rmphp\Storage\Entity;
+namespace Rmphp\Storage\Repository;
 
 interface ValueObjectInterface {
 

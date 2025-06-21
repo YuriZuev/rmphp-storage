@@ -1,6 +1,6 @@
 <?php
 
-namespace Rmphp\Storage\Entity;
+namespace Rmphp\Storage\Repository;
 
 abstract class AbstractEntity implements EntityInterface {
 
