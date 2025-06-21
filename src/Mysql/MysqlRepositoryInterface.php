@@ -8,16 +8,43 @@
 
 namespace Rmphp\Storage\Mysql;
 
+use Rmphp\ODM\ObjectDataMapper;
 use Rmphp\Storage\Repository\EntityInterface;
 use Rmphp\Storage\Repository\RepositoryException;
 
+
 interface MysqlRepositoryInterface {
+
+	/**
+	 * @param object $object
+	 * @param callable|null $method
+	 * @return array
+	 * @throws RepositoryException
+	 */
+	public function getData(object $object, callable $method = null) : array;
+
+	/**
+	 * @param string $class
+	 * @param array|object $data
+	 * @param bool $withEmpty
+	 * @return mixed
+	 */
+	public function createFromData(string $class, array|object $data, bool $withEmpty = true) : mixed;
+
+	/**
+	 * @param object $object
+	 * @param array|object $data
+	 * @param bool $withEmpty
+	 * @return mixed
+	 */
+	public function updateFromData(object $object, array|object $data, bool $withEmpty = true) : mixed;
 
 	/**
 	 * @param string $class
 	 * @param MysqlResultData|null $result
 	 * @param callable|null $function
 	 * @return mixed
+	 * @throws RepositoryException
 	 */
 	public function createFromResult(string $class, ?MysqlResultData $result, callable $function = null): mixed;
 
@@ -27,6 +54,7 @@ interface MysqlRepositoryInterface {
 	 * @param MysqlResultData|null $result
 	 * @param callable|null $function
 	 * @return array
+	 * @throws RepositoryException
 	 */
 	public function createListFromResult(string $class, ?MysqlResultData $result, callable $function = null): array;
 
