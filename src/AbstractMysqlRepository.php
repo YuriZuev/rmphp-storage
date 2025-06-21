@@ -2,14 +2,16 @@
 
 namespace Rmphp\Storage;
 
-use Rmphp\ODM\AbstractRepository;
+
+use Rmphp\ODM\ObjectDataMapper;
+use Rmphp\ODM\ODMException;
 use Rmphp\Storage\Mysql\MysqlRepositoryInterface;
 use Rmphp\Storage\Mysql\MysqlResultData;
 use Rmphp\Storage\Mysql\MysqlStorageInterface;
 use Rmphp\Storage\Repository\EntityInterface;
 use Rmphp\Storage\Repository\RepositoryException;
 
-abstract class AbstractMysqlRepository extends AbstractRepository implements MysqlRepositoryInterface {
+abstract class AbstractMysqlRepository implements MysqlRepositoryInterface {
 
 	public const DEBUG = false;
 	public const TABLE = null;
@@ -20,44 +22,57 @@ abstract class AbstractMysqlRepository extends AbstractRepository implements Mys
 	private bool $debug;
 
 	public function __construct(
-		public readonly MysqlStorageInterface $mysql
+		public readonly MysqlStorageInterface $mysql,
+		public readonly ObjectDataMapper $mapper
 	) {}
 
 
-	/** @inheritDoc */
+	/**
+	 * @inheritDoc
+	 * @throws ODMException
+	 */
 	public function createFromResult(string $class, ?MysqlResultData $result, callable $function = null): mixed {
 		if($result instanceof MysqlResultData) {
 			$val = (isset($function)) ? $function($result->fetchOne()) : $result->fetchOne();
-			$out = $this->createFromData($class, $val);
+			$out = $this->mapper->createObjectFromData($class, $val);
 		}
 		return $out ?? null;
 	}
 
 
-	/** @inheritDoc */
+	/**
+	 * @inheritDoc
+	 * @throws ODMException
+	 */
 	public function createListFromResult(string $class, ?MysqlResultData $result, callable $function = null): array {
 		if($result instanceof MysqlResultData) {
 			foreach($result->fetch() as $resultValue) {
 				$val = (isset($function)) ? $function($resultValue) : $resultValue;
-				$out[] = $this->createFromData($class, $val);
+				$out[] = $this->mapper->createObjectFromData($class, $val);
 			}
 		}
 		return $out ?? [];
 	}
 
 
-	/** @inheritDoc */
+	/**
+	 * @inheritDoc
+	 * @throws ODMException
+	 */
 	public function getEntityById(int $id, string $table = null): mixed {
 		if(!isset($table)) $table = $this->getTable();
-		if($result = $this->mysql->findById($table, $id)) $out = $this->createFromData($this->getEntityClass(), $result);
+		if($result = $this->mysql->findById($table, $id)) $out = $this->mapper->createObjectFromData($this->getEntityClass(), $result);
 		return $out ?? null;
 	}
 
 
-	/** @inheritDoc */
+	/**
+	 * @inheritDoc
+	 * @throws ODMException
+	 */
 	public function saveEntity(EntityInterface $object, string $table = null) : mixed {
 		if(!isset($table)) $table = $this->getTable();
-		$in = $this->getProperties($object, function ($value){
+		$in = $this->mapper->getDataFromObject($object, function ($value){
 			return (is_string($value)) ? $this->mysql->escapeStr($value) : $value;
 		});
 		if($this->isDebug()) {$this->debug($object, $in, $table, ...$this->getDebugExtraData()); exit;}
@@ -191,7 +206,7 @@ abstract class AbstractMysqlRepository extends AbstractRepository implements Mys
 	 * @return array
 	 */
 	protected function getDebugExtraData() : array {
-		return [$this->getRepositoryStack(), $this->getClassesCache(), $this->getAttributesObjectsCache()];
+		return [$this->mapper->getRepositoryStack(), $this->mapper->getClassesCache(), $this->mapper->getAttributesObjectsCache()];
 	}
 
 	/**

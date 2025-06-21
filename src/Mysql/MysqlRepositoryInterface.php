@@ -10,9 +10,8 @@ namespace Rmphp\Storage\Mysql;
 
 use Rmphp\Storage\Repository\EntityInterface;
 use Rmphp\Storage\Repository\RepositoryException;
-use Rmphp\Storage\Repository\RepositoryInterface;
 
-interface MysqlRepositoryInterface extends RepositoryInterface {
+interface MysqlRepositoryInterface {
 
 	/**
 	 * @param string $class
@@ -21,6 +20,7 @@ interface MysqlRepositoryInterface extends RepositoryInterface {
 	 * @return mixed
 	 */
 	public function createFromResult(string $class, ?MysqlResultData $result, callable $function = null): mixed;
+
 
 	/**
 	 * @param string $class
