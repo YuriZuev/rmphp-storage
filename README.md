@@ -1,6 +1,6 @@
 ## Rmphp/Storage
 
-DB component for **Rmphp**
+Storage component for **Rmphp**
 
 ## Install
 
@@ -10,12 +10,12 @@ Stable version
 composer require rmphp/storage
 ```
 ```bash
-composer require rmphp/storage:"^11.0"
+composer require rmphp/storage:"^12.0"
 ```
 
 
 Dev version contains the latest changes
 
 ```bash
-composer require rmphp/storage:"11.x-dev"
+composer require rmphp/storage:"12.x-dev"
 ```
